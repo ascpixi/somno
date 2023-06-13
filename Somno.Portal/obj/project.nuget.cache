@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "SKqXR63ZRWRaSPsZwtFs6xQXwV+09GyDkaWwIqRgIV4GjG2+2tymHbUCsF016WGFdAwIdyzwruzO4PNa2KeV6g==",
+  "dgSpecHash": "i8WyeYSUkHfpSRZcDbR6Iwdgbbw+SynShpP6dOMpLvv2ay1vmlEyTwpTkaXvYJZiZigclVrRkpRNPAIiylwShg==",
   "success": true,
-  "projectFilePath": "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Somno.Portal\\Somno.Portal.csproj",
+  "projectFilePath": "C:\\Users\\asc\\source\\repos\\Somno\\Somno.Portal\\Somno.Portal.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

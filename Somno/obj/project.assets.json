@@ -2,102 +2,6 @@
   "version": 3,
   "targets": {
     "net5.0": {
-      "ImGui.NET/1.89.5.1": {
-        "type": "package",
-        "dependencies": {
-          "System.Buffers": "4.4.0",
-          "System.Numerics.Vectors": "4.4.0",
-          "System.Runtime.CompilerServices.Unsafe": "4.4.0"
-        },
-        "compile": {
-          "lib/netstandard2.0/ImGui.NET.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/ImGui.NET.dll": {}
-        },
-        "runtimeTargets": {
-          "runtimes/linux-x64/native/libcimgui.so": {
-            "assetType": "native",
-            "rid": "linux-x64"
-          },
-          "runtimes/osx/native/libcimgui.dylib": {
-            "assetType": "native",
-            "rid": "osx"
-          },
-          "runtimes/win-arm64/native/cimgui.dll": {
-            "assetType": "native",
-            "rid": "win-arm64"
-          },
-          "runtimes/win-x64/native/cimgui.dll": {
-            "assetType": "native",
-            "rid": "win-x64"
-          },
-          "runtimes/win-x86/native/cimgui.dll": {
-            "assetType": "native",
-            "rid": "win-x86"
-          }
-        }
-      },
-      "SixLabors.ImageSharp/3.0.1": {
-        "type": "package",
-        "build": {
-          "build/SixLabors.ImageSharp.props": {}
-        }
-      },
-      "System.Buffers/4.4.0": {
-        "type": "package",
-        "compile": {
-          "ref/netcoreapp2.0/_._": {}
-        },
-        "runtime": {
-          "lib/netcoreapp2.0/_._": {}
-        }
-      },
-      "System.Numerics.Vectors/4.4.0": {
-        "type": "package",
-        "compile": {
-          "ref/netcoreapp2.0/_._": {}
-        },
-        "runtime": {
-          "lib/netcoreapp2.0/_._": {}
-        }
-      },
-      "System.Runtime.CompilerServices.Unsafe/4.4.0": {
-        "type": "package",
-        "compile": {
-          "ref/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
-        }
-      },
-      "Vortice.D3DCompiler/3.2.0": {
-        "type": "package",
-        "build": {
-          "build/Vortice.D3DCompiler.props": {}
-        },
-        "buildMultiTargeting": {
-          "buildMultiTargeting/Vortice.D3DCompiler.props": {}
-        }
-      },
-      "Vortice.Direct3D11/3.2.0": {
-        "type": "package",
-        "build": {
-          "build/Vortice.Direct3D11.props": {}
-        },
-        "buildMultiTargeting": {
-          "buildMultiTargeting/Vortice.Direct3D11.props": {}
-        }
-      },
-      "Vortice.DXGI/3.2.0": {
-        "type": "package",
-        "build": {
-          "build/Vortice.DXGI.props": {}
-        },
-        "buildMultiTargeting": {
-          "buildMultiTargeting/Vortice.DXGI.props": {}
-        }
-      },
       "Lunar/1.0.0": {
         "type": "project",
         "framework": "Unsupported,Version=v0.0",
@@ -110,83 +14,6 @@
       }
     },
     "net5.0/win-x64": {
-      "ImGui.NET/1.89.5.1": {
-        "type": "package",
-        "dependencies": {
-          "System.Buffers": "4.4.0",
-          "System.Numerics.Vectors": "4.4.0",
-          "System.Runtime.CompilerServices.Unsafe": "4.4.0"
-        },
-        "compile": {
-          "lib/netstandard2.0/ImGui.NET.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/ImGui.NET.dll": {}
-        },
-        "native": {
-          "runtimes/win-x64/native/cimgui.dll": {}
-        }
-      },
-      "SixLabors.ImageSharp/3.0.1": {
-        "type": "package",
-        "build": {
-          "build/SixLabors.ImageSharp.props": {}
-        }
-      },
-      "System.Buffers/4.4.0": {
-        "type": "package",
-        "compile": {
-          "ref/netcoreapp2.0/_._": {}
-        },
-        "runtime": {
-          "lib/netcoreapp2.0/_._": {}
-        }
-      },
-      "System.Numerics.Vectors/4.4.0": {
-        "type": "package",
-        "compile": {
-          "ref/netcoreapp2.0/_._": {}
-        },
-        "runtime": {
-          "lib/netcoreapp2.0/_._": {}
-        }
-      },
-      "System.Runtime.CompilerServices.Unsafe/4.4.0": {
-        "type": "package",
-        "compile": {
-          "ref/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {}
-        }
-      },
-      "Vortice.D3DCompiler/3.2.0": {
-        "type": "package",
-        "build": {
-          "build/Vortice.D3DCompiler.props": {}
-        },
-        "buildMultiTargeting": {
-          "buildMultiTargeting/Vortice.D3DCompiler.props": {}
-        }
-      },
-      "Vortice.Direct3D11/3.2.0": {
-        "type": "package",
-        "build": {
-          "build/Vortice.Direct3D11.props": {}
-        },
-        "buildMultiTargeting": {
-          "buildMultiTargeting/Vortice.Direct3D11.props": {}
-        }
-      },
-      "Vortice.DXGI/3.2.0": {
-        "type": "package",
-        "build": {
-          "build/Vortice.DXGI.props": {}
-        },
-        "buildMultiTargeting": {
-          "buildMultiTargeting/Vortice.DXGI.props": {}
-        }
-      },
       "Lunar/1.0.0": {
         "type": "project",
         "framework": "Unsupported,Version=v0.0",
@@ -200,197 +27,6 @@
     }
   },
   "libraries": {
-    "ImGui.NET/1.89.5.1": {
-      "sha512": "gaY4tZhQh8kskuSDZVaHjJ87xVlbpJEDZDC6QhUmzGxZl7OCVTkXV/jMtxXe5k5GFrMyPZjVtjjEreBhiNvp4w==",
-      "type": "package",
-      "path": "imgui.net/1.89.5.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "build/net40/ImGui.NET.targets",
-        "imgui.net.1.89.5.1.nupkg.sha512",
-        "imgui.net.nuspec",
-        "lib/net6.0/ImGui.NET.dll",
-        "lib/net6.0/ImGui.NET.xml",
-        "lib/netstandard2.0/ImGui.NET.dll",
-        "lib/netstandard2.0/ImGui.NET.xml",
-        "runtimes/linux-x64/native/libcimgui.so",
-        "runtimes/osx/native/libcimgui.dylib",
-        "runtimes/win-arm64/native/cimgui.dll",
-        "runtimes/win-x64/native/cimgui.dll",
-        "runtimes/win-x86/native/cimgui.dll"
-      ]
-    },
-    "SixLabors.ImageSharp/3.0.1": {
-      "sha512": "o0v/J6SJwp3RFrzR29beGx0cK7xcMRgOyIuw8ZNLQyNnBhiyL/vIQKn7cfycthcWUPG3XezUjFwBWzkcUUDFbg==",
-      "type": "package",
-      "path": "sixlabors.imagesharp/3.0.1",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE",
-        "build/SixLabors.ImageSharp.props",
-        "lib/net6.0/SixLabors.ImageSharp.dll",
-        "lib/net6.0/SixLabors.ImageSharp.xml",
-        "sixlabors.imagesharp.128.png",
-        "sixlabors.imagesharp.3.0.1.nupkg.sha512",
-        "sixlabors.imagesharp.nuspec"
-      ]
-    },
-    "System.Buffers/4.4.0": {
-      "sha512": "AwarXzzoDwX6BgrhjoJsk6tUezZEozOT5Y9QKF94Gl4JK91I4PIIBkBco9068Y9/Dra8Dkbie99kXB8+1BaYKw==",
-      "type": "package",
-      "path": "system.buffers/4.4.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/netcoreapp2.0/_._",
-        "lib/netstandard1.1/System.Buffers.dll",
-        "lib/netstandard1.1/System.Buffers.xml",
-        "lib/netstandard2.0/System.Buffers.dll",
-        "lib/netstandard2.0/System.Buffers.xml",
-        "ref/netcoreapp2.0/_._",
-        "ref/netstandard1.1/System.Buffers.dll",
-        "ref/netstandard1.1/System.Buffers.xml",
-        "ref/netstandard2.0/System.Buffers.dll",
-        "ref/netstandard2.0/System.Buffers.xml",
-        "system.buffers.4.4.0.nupkg.sha512",
-        "system.buffers.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
-      ]
-    },
-    "System.Numerics.Vectors/4.4.0": {
-      "sha512": "UiLzLW+Lw6HLed1Hcg+8jSRttrbuXv7DANVj0DkL9g6EnnzbL75EB7EWsw5uRbhxd/4YdG8li5XizGWepmG3PQ==",
-      "type": "package",
-      "path": "system.numerics.vectors/4.4.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/MonoAndroid10/_._",
-        "lib/MonoTouch10/_._",
-        "lib/net46/System.Numerics.Vectors.dll",
-        "lib/net46/System.Numerics.Vectors.xml",
-        "lib/netcoreapp2.0/_._",
-        "lib/netstandard1.0/System.Numerics.Vectors.dll",
-        "lib/netstandard1.0/System.Numerics.Vectors.xml",
-        "lib/netstandard2.0/System.Numerics.Vectors.dll",
-        "lib/netstandard2.0/System.Numerics.Vectors.xml",
-        "lib/portable-net45+win8+wp8+wpa81/System.Numerics.Vectors.dll",
-        "lib/portable-net45+win8+wp8+wpa81/System.Numerics.Vectors.xml",
-        "lib/xamarinios10/_._",
-        "lib/xamarinmac20/_._",
-        "lib/xamarintvos10/_._",
-        "lib/xamarinwatchos10/_._",
-        "ref/MonoAndroid10/_._",
-        "ref/MonoTouch10/_._",
-        "ref/net46/System.Numerics.Vectors.dll",
-        "ref/net46/System.Numerics.Vectors.xml",
-        "ref/netcoreapp2.0/_._",
-        "ref/netstandard1.0/System.Numerics.Vectors.dll",
-        "ref/netstandard1.0/System.Numerics.Vectors.xml",
-        "ref/netstandard2.0/System.Numerics.Vectors.dll",
-        "ref/netstandard2.0/System.Numerics.Vectors.xml",
-        "ref/xamarinios10/_._",
-        "ref/xamarinmac20/_._",
-        "ref/xamarintvos10/_._",
-        "ref/xamarinwatchos10/_._",
-        "system.numerics.vectors.4.4.0.nupkg.sha512",
-        "system.numerics.vectors.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
-      ]
-    },
-    "System.Runtime.CompilerServices.Unsafe/4.4.0": {
-      "sha512": "9dLLuBxr5GNmOfl2jSMcsHuteEg32BEfUotmmUkmZjpR3RpVHE8YQwt0ow3p6prwA1ME8WqDVZqrr8z6H8G+Kw==",
-      "type": "package",
-      "path": "system.runtime.compilerservices.unsafe/4.4.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "LICENSE.TXT",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll",
-        "lib/netstandard1.0/System.Runtime.CompilerServices.Unsafe.xml",
-        "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll",
-        "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.xml",
-        "ref/netstandard1.0/System.Runtime.CompilerServices.Unsafe.dll",
-        "ref/netstandard1.0/System.Runtime.CompilerServices.Unsafe.xml",
-        "ref/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll",
-        "ref/netstandard2.0/System.Runtime.CompilerServices.Unsafe.xml",
-        "system.runtime.compilerservices.unsafe.4.4.0.nupkg.sha512",
-        "system.runtime.compilerservices.unsafe.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
-      ]
-    },
-    "Vortice.D3DCompiler/3.2.0": {
-      "sha512": "g5S5refSo61TR2y+aHed4kGDqRebU0ewFXhBtHrha8fZnALRS/F2hGnM2hztqed8AWo06I2i9OLciOJAZlgeQA==",
-      "type": "package",
-      "path": "vortice.d3dcompiler/3.2.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "build/Vortice.D3DCompiler.BindMapping.xml",
-        "build/Vortice.D3DCompiler.props",
-        "buildMultiTargeting/Vortice.D3DCompiler.props",
-        "lib/net6.0/Vortice.D3DCompiler.dll",
-        "lib/net6.0/Vortice.D3DCompiler.pdb",
-        "lib/net6.0/Vortice.D3DCompiler.xml",
-        "lib/net7.0/Vortice.D3DCompiler.dll",
-        "lib/net7.0/Vortice.D3DCompiler.pdb",
-        "lib/net7.0/Vortice.D3DCompiler.xml",
-        "vortice.d3dcompiler.3.2.0.nupkg.sha512",
-        "vortice.d3dcompiler.nuspec"
-      ]
-    },
-    "Vortice.Direct3D11/3.2.0": {
-      "sha512": "BGeaLUXIty564H+QgynR5FH3su6UxKEY8RPVQtMxVVPj2f0PNryaFjVQ0JJJhaEkg6G2/7VF/8tizQZy/DkF9g==",
-      "type": "package",
-      "path": "vortice.direct3d11/3.2.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "build/Vortice.Direct3D11.BindMapping.xml",
-        "build/Vortice.Direct3D11.props",
-        "buildMultiTargeting/Vortice.Direct3D11.props",
-        "lib/net6.0/Vortice.Direct3D11.dll",
-        "lib/net6.0/Vortice.Direct3D11.pdb",
-        "lib/net6.0/Vortice.Direct3D11.xml",
-        "lib/net7.0/Vortice.Direct3D11.dll",
-        "lib/net7.0/Vortice.Direct3D11.pdb",
-        "lib/net7.0/Vortice.Direct3D11.xml",
-        "vortice.direct3d11.3.2.0.nupkg.sha512",
-        "vortice.direct3d11.nuspec"
-      ]
-    },
-    "Vortice.DXGI/3.2.0": {
-      "sha512": "vx0z23UGxpLfYELK9P2HTalcoMd8etqmJzKfU2Ho88e+s4pAtQrUythotpYZ41zS/9cbOo25HhRAXljVmjPTuw==",
-      "type": "package",
-      "path": "vortice.dxgi/3.2.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "build/Vortice.DXGI.BindMapping.xml",
-        "build/Vortice.DXGI.props",
-        "buildMultiTargeting/Vortice.DXGI.props",
-        "lib/net6.0/Vortice.DXGI.dll",
-        "lib/net6.0/Vortice.DXGI.pdb",
-        "lib/net6.0/Vortice.DXGI.xml",
-        "lib/net7.0-windows10.0.19041/Vortice.DXGI.dll",
-        "lib/net7.0-windows10.0.19041/Vortice.DXGI.pdb",
-        "lib/net7.0-windows10.0.19041/Vortice.DXGI.xml",
-        "lib/net7.0/Vortice.DXGI.dll",
-        "lib/net7.0/Vortice.DXGI.pdb",
-        "lib/net7.0/Vortice.DXGI.xml",
-        "vortice.dxgi.3.2.0.nupkg.sha512",
-        "vortice.dxgi.nuspec"
-      ]
-    },
     "Lunar/1.0.0": {
       "type": "project",
       "path": "../Lunar/Lunar.csproj",
@@ -399,51 +35,46 @@
   },
   "projectFileDependencyGroups": {
     "net5.0": [
-      "ImGui.NET >= 1.89.5.1",
-      "Lunar >= 1.0.0",
-      "SixLabors.ImageSharp >= 3.0.1",
-      "Vortice.D3DCompiler >= 3.2.0",
-      "Vortice.DXGI >= 3.2.0",
-      "Vortice.Direct3D11 >= 3.2.0"
+      "Lunar >= 1.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
-    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {}
+    "C:\\Users\\asc\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Somno\\Somno.csproj",
+      "projectUniqueName": "C:\\Users\\asc\\source\\repos\\Somno\\Somno\\Somno.csproj",
       "projectName": "Somno",
-      "projectPath": "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Somno\\Somno.csproj",
-      "packagesPath": "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\",
-      "outputPath": "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Somno\\obj\\",
+      "projectPath": "C:\\Users\\asc\\source\\repos\\Somno\\Somno\\Somno.csproj",
+      "packagesPath": "C:\\Users\\asc\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\asc\\source\\repos\\Somno\\Somno\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\krupabar.ELEKTRYK\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\asc\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net5.0"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Users\\asc\\AppData\\Roaming\\Cosmos User Kit\\packages\\": {},
+        "D:\\Code\\GDAPI\\GDAPI\\GDAPI\\bin\\Release": {},
+        "D:\\Code\\cosmos-coroutines\\src\\Cosmos.Coroutines\\bin\\Release": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Lunar\\Lunar.csproj": {
-              "projectPath": "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Lunar\\Lunar.csproj"
+            "C:\\Users\\asc\\source\\repos\\Somno\\Lunar\\Lunar.csproj": {
+              "projectPath": "C:\\Users\\asc\\source\\repos\\Somno\\Lunar\\Lunar.csproj"
             }
           }
         }
@@ -457,39 +88,18 @@
     "frameworks": {
       "net5.0": {
         "targetAlias": "net5.0",
-        "dependencies": {
-          "ImGui.NET": {
-            "target": "Package",
-            "version": "[1.89.5.1, )"
-          },
-          "SixLabors.ImageSharp": {
-            "target": "Package",
-            "version": "[3.0.1, )"
-          },
-          "Vortice.D3DCompiler": {
-            "target": "Package",
-            "version": "[3.2.0, )"
-          },
-          "Vortice.DXGI": {
-            "target": "Package",
-            "version": "[3.2.0, )"
-          },
-          "Vortice.Direct3D11": {
-            "target": "Package",
-            "version": "[3.2.0, )"
-          }
-        },
         "imports": [
           "net461",
           "net462",
           "net47",
           "net471",
           "net472",
-          "net48"
+          "net48",
+          "net481"
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.410\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {
@@ -502,7 +112,7 @@
     {
       "code": "NU1201",
       "level": "Error",
-      "message": "Projekt Lunar nie jest zgodny z elementem net5.0 (.NETCoreApp,Version=v5.0). Projekt Lunar obsługuje: net7.0 (.NETCoreApp,Version=v7.0)",
+      "message": "Project Lunar is not compatible with net5.0 (.NETCoreApp,Version=v5.0). Project Lunar supports: net7.0 (.NETCoreApp,Version=v7.0)",
       "libraryId": "Lunar",
       "targetGraphs": [
         "net5.0"
@@ -511,7 +121,7 @@
     {
       "code": "NU1201",
       "level": "Error",
-      "message": "Projekt Lunar nie jest zgodny z elementem net5.0 (.NETCoreApp,Version=v5.0) / win-x64. Projekt Lunar obsługuje: net7.0 (.NETCoreApp,Version=v7.0)",
+      "message": "Project Lunar is not compatible with net5.0 (.NETCoreApp,Version=v5.0) / win-x64. Project Lunar supports: net7.0 (.NETCoreApp,Version=v7.0)",
       "libraryId": "Lunar",
       "targetGraphs": [
         "net5.0/win-x64"

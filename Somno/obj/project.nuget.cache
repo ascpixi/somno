@@ -1,23 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "1008SXjUG/+KnSBBBUSFpQCbId67KFbL4JLHXfFm4Jq7fDgBN4cEq673hZ0g5cgn0lcVhwVGDBAayucotF9wxg==",
+  "dgSpecHash": "CjGvUscU0xVQKGZq8HPbm2eCsWmDF9cx2a5unSBofqwZsHOWMrZqCcm4fOSlUx2IQkle92/Glhsaq2G+Wn44/Q==",
   "success": false,
-  "projectFilePath": "\\\\192.168.100.1\\profiles$\\krupabar\\Documents\\GitHub\\somno-dev\\Somno\\Somno.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\imgui.net\\1.89.5.1\\imgui.net.1.89.5.1.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\sixlabors.imagesharp\\3.0.1\\sixlabors.imagesharp.3.0.1.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\system.buffers\\4.4.0\\system.buffers.4.4.0.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\system.numerics.vectors\\4.4.0\\system.numerics.vectors.4.4.0.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.4.0\\system.runtime.compilerservices.unsafe.4.4.0.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\vortice.d3dcompiler\\3.2.0\\vortice.d3dcompiler.3.2.0.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\vortice.direct3d11\\3.2.0\\vortice.direct3d11.3.2.0.nupkg.sha512",
-    "C:\\Users\\krupabar.ELEKTRYK\\.nuget\\packages\\vortice.dxgi\\3.2.0\\vortice.dxgi.3.2.0.nupkg.sha512"
-  ],
+  "projectFilePath": "C:\\Users\\asc\\source\\repos\\Somno\\Somno\\Somno.csproj",
+  "expectedPackageFiles": [],
   "logs": [
     {
       "code": "NU1201",
       "level": "Error",
-      "message": "Projekt Lunar nie jest zgodny z elementem net5.0 (.NETCoreApp,Version=v5.0). Projekt Lunar obsługuje: net7.0 (.NETCoreApp,Version=v7.0)",
+      "message": "Project Lunar is not compatible with net5.0 (.NETCoreApp,Version=v5.0). Project Lunar supports: net7.0 (.NETCoreApp,Version=v7.0)",
       "libraryId": "Lunar",
       "targetGraphs": [
         "net5.0"
@@ -26,7 +17,7 @@
     {
       "code": "NU1201",
       "level": "Error",
-      "message": "Projekt Lunar nie jest zgodny z elementem net5.0 (.NETCoreApp,Version=v5.0) / win-x64. Projekt Lunar obsługuje: net7.0 (.NETCoreApp,Version=v7.0)",
+      "message": "Project Lunar is not compatible with net5.0 (.NETCoreApp,Version=v5.0) / win-x64. Project Lunar supports: net7.0 (.NETCoreApp,Version=v7.0)",
       "libraryId": "Lunar",
       "targetGraphs": [
         "net5.0/win-x64"

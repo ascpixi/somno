@@ -1,4 +1,5 @@
 ﻿using Somno.Portal.Native;
+using Somno.Portal.Native.Structures.Kernel32;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Somno.ILTransformer": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\asc\\source\\repos\\Somno\\Somno\\bin\\Release\\net7.0\\win-x64\\Somno.dll\""
+    }
+  }
+}

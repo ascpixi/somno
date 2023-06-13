@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Somno.Portal.Native.Structures.Kernel32;
+using System;
 using System.Collections.Generic;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Somno.Portal.Native
 {
@@ -38,7 +40,6 @@ namespace Somno.Portal.Native
         /// <param name="hObject">A valid handle to an open object.</param>
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("kernel32.dll", SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         [SuppressUnmanagedCodeSecurity]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
@@ -57,10 +58,78 @@ namespace Somno.Portal.Native
 
         [DllImport("kernel32", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool Process32FirstW(IntPtr hSnapshot, ref ProcessEntry32W entry);
+        public static extern bool Process32FirstW(
+            IntPtr hSnapshot,
+            ref ProcessEntry32W entry
+        );
 
         [DllImport("kernel32")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool Process32NextW(IntPtr hSnapshot, ref ProcessEntry32W entry);
+        public static extern bool Process32NextW(
+            IntPtr hSnapshot,
+            ref ProcessEntry32W entry
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr OpenFileMapping(
+            FileMapAccess dwDesiredAccess,
+            bool bInheritHandle,
+            string lpName
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr OpenProcess(
+             ProcessAccessFlags processAccess,
+             bool bInheritHandle,
+             uint processId
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern int VirtualQueryEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            out MemoryBasicInformation lpBuffer,
+            uint dwLength
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        public static extern IntPtr VirtualAllocEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            IntPtr dwSize,
+            AllocationType flAllocationType,
+            MemoryProtection flProtect
+        );
+
+        [DllImport("kernel32", SetLastError = true, ExactSpelling = true)]
+        public static extern IntPtr VirtualAlloc(
+            IntPtr lpAddress,
+            nuint dwSize,
+            AllocationType flAllocationType,
+            MemoryProtection flProtect
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public unsafe static extern bool ReadProcessMemory(
+            IntPtr hProcess,
+            void* lpBaseAddress,
+            void* lpBuffer,
+            nuint dwSize,
+            out nuint lpNumberOfBytesRead
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public unsafe static extern bool VirtualFree(
+          [In] void* lpAddress,
+          [In] nuint dwSize,
+          [In] FreeType dwFreeType
+        );
+
+        [DllImport("kernel32.dll", EntryPoint = "RtlCopyMemory", SetLastError = false)]
+        public unsafe static extern void CopyMemory(
+            void* dest,
+            void* src,
+            uint count
+        );
     }
 }

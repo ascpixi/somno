@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Somno.Portal.Native.Structures.AdvAPI32;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -44,7 +45,7 @@ namespace Somno.Portal.Native
         public static extern bool AdjustTokenPrivileges(
             IntPtr tokenHandle,
             [MarshalAs(UnmanagedType.Bool)] bool disableAllPrivileges,
-            ref TokenPrivilidges newState,
+            ref TokenPrivileges newState,
             UInt32 bufferLengthInBytes,
             IntPtr previousState,
             IntPtr returnLengthInBytes

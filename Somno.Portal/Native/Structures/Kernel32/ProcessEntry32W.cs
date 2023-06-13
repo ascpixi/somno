@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Somno.Portal.Native
+namespace Somno.Portal.Native.Structures.Kernel32
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal struct ProcessEntry32W

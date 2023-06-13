@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Somno.Portal.Native
+namespace Somno.Portal.Native.Structures.AdvAPI32
 {
-    internal struct TokenPrivilidges
+    internal struct TokenPrivileges
     {
         public int PrivilegeCount;
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Somno.Portal.Native.Structures.Kernel32
+namespace Somno.Portal.Native.Data.Kernel32
 {
     [Flags]
     public enum ProcessAccessFlags : uint

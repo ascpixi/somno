@@ -1,4 +1,5 @@
 ﻿using Somno.Portal.Native;
+using Somno.Portal.Native.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;

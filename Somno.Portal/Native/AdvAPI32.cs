@@ -1,4 +1,6 @@
-﻿using Somno.Portal.Native.Structures.AdvAPI32;
+﻿using Somno.Portal.Native.Data;
+using Somno.Portal.Native.Data.AdvAPI32;
+using Somno.Portal.Windows;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -8,8 +10,8 @@ namespace Somno.Portal.Native
 {
     internal static class AdvAPI32
     {
-        internal const uint SE_PRIVILEGE_ENABLED = 0x00000002;
-        internal const uint SE_PRIVILEGE_REMOVED = 0x00000004;
+        public const uint SE_PRIVILEGE_ENABLED = 0x00000002;
+        public const uint SE_PRIVILEGE_REMOVED = 0x00000004;
 
         /// <summary>
         /// The OpenProcessToken function opens the access token associated with a process.
@@ -20,10 +22,10 @@ namespace Somno.Portal.Native
         /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool OpenProcessToken(
-            IntPtr processHandle,
-            uint desiredAccess,
-            out IntPtr tokenHandle
+        public static extern bool OpenProcessToken(
+            [In]  Handle processHandle,
+            [In]  uint desiredAccess,
+            [Out] out Handle tokenHandle
         );
 
         /// <summary>
@@ -35,20 +37,30 @@ namespace Somno.Portal.Native
         /// <returns>If the function succeeds, the function returns nonzero.</returns>
         [DllImport("advapi32.dll")]
         public static extern bool LookupPrivilegeValue(
-            string lpSystemName,
-            string lpName,
-            ref LUID lpLuid
+            [In, Optional] string? lpSystemName,
+            [In]           string lpName,
+            [Out]          out LUID lpLuid
         );
 
+        /// <summary>
+        /// The AdjustTokenPrivileges function enables or disables privileges in the specified access token. Enabling or disabling privileges in an access token requires TOKEN_ADJUST_PRIVILEGES access.
+        /// </summary>
+        /// <param name="tokenHandle">A handle to the access token that contains the privileges to be modified. The handle must have TOKEN_ADJUST_PRIVILEGES access to the token. If the PreviousState parameter is not NULL, the handle must also have TOKEN_QUERY access.</param>
+        /// <param name="disableAllPrivileges">Specifies whether the function disables all of the token's privileges. If this value is TRUE, the function disables all privileges and ignores the NewState parameter. If it is FALSE, the function modifies privileges based on the information pointed to by the NewState parameter.</param>
+        /// <param name="newState">A pointer to a TOKEN_PRIVILEGES structure that specifies an array of privileges and their attributes. If the DisableAllPrivileges parameter is FALSE, the AdjustTokenPrivileges function enables, disables, or removes these privileges for the token. The following table describes the action taken by the AdjustTokenPrivileges function, based on the privilege attribute.</param>
+        /// <param name="bufferLengthInBytes">Specifies the size, in bytes, of the buffer pointed to by the PreviousState parameter. This parameter can be zero if the PreviousState parameter is NULL.</param>
+        /// <param name="previousState">A pointer to a buffer that the function fills with a TOKEN_PRIVILEGES structure that contains the previous state of any privileges that the function modifies. That is, if a privilege has been modified by this function, the privilege and its previous state are contained in the TOKEN_PRIVILEGES structure referenced by PreviousState. If the PrivilegeCount member of TOKEN_PRIVILEGES is zero, then no privileges have been changed by this function. This parameter can be NULL.</param>
+        /// <param name="returnLengthInBytes">A pointer to a variable that receives the required size, in bytes, of the buffer pointed to by the PreviousState parameter. This parameter can be NULL if PreviousState is NULL.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool AdjustTokenPrivileges(
-            IntPtr tokenHandle,
-            [MarshalAs(UnmanagedType.Bool)] bool disableAllPrivileges,
-            ref TokenPrivileges newState,
-            UInt32 bufferLengthInBytes,
-            IntPtr previousState,
-            IntPtr returnLengthInBytes
+            [In] Handle tokenHandle,
+            [In] [MarshalAs(UnmanagedType.Bool)] bool disableAllPrivileges,
+            [In, Optional]  ref TokenPrivileges newState,
+            [In]            uint bufferLengthInBytes,
+            [Out, Optional] IntPtr previousState,
+            [Out, Optional] IntPtr returnLengthInBytes
         );
     }
 }

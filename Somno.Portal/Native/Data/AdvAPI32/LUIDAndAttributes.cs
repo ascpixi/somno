@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Somno.Portal.Native.Structures.AdvAPI32
+namespace Somno.Portal.Native.Data.AdvAPI32
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     internal struct LUIDAndAttributes

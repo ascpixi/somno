@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Somno.Portal.Native
+namespace Somno.Portal.Native.Data.Kernel32
 {
     [Flags]
     public enum SnapshotFlags : uint

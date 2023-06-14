@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Somno.Portal.Native
+namespace Somno.Portal.Native.Data
 {
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct MemoryBasicInformation

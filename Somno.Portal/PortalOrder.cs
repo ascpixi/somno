@@ -1,4 +1,6 @@
 ﻿using Somno.Portal.Native;
+using Somno.Portal.Native.Data;
+using Somno.Portal.Windows;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +12,7 @@ namespace Somno.Portal
         public ulong Exec;
         public uint Order;
         public NTStatus Status;
-        public IntPtr ProcessHandle;
+        public Handle ProcessHandle;
         public nuint Size;
         public nuint* BytesReadOrWritten;
 

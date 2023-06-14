@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Somno.Portal.Native.Structures.Kernel32
+namespace Somno.Portal.Native.Data.Kernel32
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal struct ProcessEntry32W
     {
         public uint Size;
-        public uint Usage;
+        [Obsolete] public uint Usage;
         public uint ProcessID;
-        public IntPtr DefaultHeapID;
-        public uint ModuleID;
-        public uint Threads;
+        [Obsolete] public IntPtr DefaultHeapID;
+        [Obsolete] public uint ModuleID;
+        [Obsolete] public uint Threads;
         public uint ParentProcessID;
         public int PriClassBase;
-        public uint Flags;
+        [Obsolete] public uint Flags;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string ExeFile;
     };
 }

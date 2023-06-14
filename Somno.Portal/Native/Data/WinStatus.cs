@@ -1,4 +1,4 @@
-﻿namespace Somno.Portal.Native
+﻿namespace Somno.Portal.Native.Data
 {
     public class Win32Status
     {
@@ -12036,5 +12036,4 @@
             return result < 0;
         }
     }
-}
 }

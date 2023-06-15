@@ -24,11 +24,12 @@ namespace Somno.UI.Engine
 {
     internal abstract class ImGuiOverlay : IDisposable
     {
+        public Win32Window Window { get; private set; }
+
         private readonly string title;
         private readonly Format format;
 
         private WndClassEx wndClass;
-        private Win32Window window;
         private ID3D11Device device;
         private ID3D11DeviceContext deviceContext;
         private IDXGISwapChain swapChain;
@@ -207,13 +208,13 @@ namespace Somno.UI.Engine
         /// </summary>
         public Point Position {
             get {
-                return this.window.Dimensions.Location;
+                return this.Window.Dimensions.Location;
             }
 
             set {
-                if (this.window.Dimensions.Location != value) {
-                    User32.MoveWindow(this.window.Handle, value.X, value.Y, this.window.Dimensions.Width, this.window.Dimensions.Height, true);
-                    this.window.Dimensions.Location = value;
+                if (this.Window.Dimensions.Location != value) {
+                    User32.MoveWindow(this.Window.Handle, value.X, value.Y, this.Window.Dimensions.Width, this.Window.Dimensions.Height, true);
+                    this.Window.Dimensions.Location = value;
                 }
             }
         }
@@ -223,12 +224,12 @@ namespace Somno.UI.Engine
         /// </summary>
         public Size Size {
             get {
-                return this.window.Dimensions.Size;
+                return this.Window.Dimensions.Size;
             }
             set {
-                if (this.window.Dimensions.Size != value) {
-                    User32.MoveWindow(this.window.Handle, this.window.Dimensions.X, this.window.Dimensions.Y, value.Width, value.Height, true);
-                    this.window.Dimensions.Size = value;
+                if (this.Window.Dimensions.Size != value) {
+                    User32.MoveWindow(this.Window.Handle, this.Window.Dimensions.X, this.Window.Dimensions.Y, value.Width, value.Height, true);
+                    this.Window.Dimensions.Size = value;
                 }
             }
         }
@@ -325,7 +326,7 @@ namespace Somno.UI.Engine
                 this.backBuffer?.Release();
                 this.renderView?.Release();
                 this.renderer?.Dispose();
-                this.window?.Dispose();
+                this.Window?.Dispose();
                 this.deviceContext?.Release();
                 this.device?.Release();
             }
@@ -363,7 +364,7 @@ namespace Somno.UI.Engine
             while (!token.IsCancellationRequested) {
                 deltaTime = stopwatch.ElapsedTicks / (float)Stopwatch.Frequency;
                 stopwatch.Restart();
-                this.window.PumpEvents();
+                this.Window.PumpEvents();
                 SetOverlayClickable(this.inputhandler.Update());
                 this.renderer.Update(deltaTime, () => { Render(); });
                 this.deviceContext.OMSetRenderTargets(renderView);
@@ -395,16 +396,16 @@ namespace Somno.UI.Engine
                 using var dxgiFactory = device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
                 var swapchainDesc = new SwapChainDescription() {
                     BufferCount = 1,
-                    BufferDescription = new ModeDescription(this.window.Dimensions.Width, this.window.Dimensions.Height, this.format),
+                    BufferDescription = new ModeDescription(this.Window.Dimensions.Width, this.Window.Dimensions.Height, this.format),
                     Windowed = true,
-                    OutputWindow = this.window.Handle,
+                    OutputWindow = this.Window.Handle,
                     SampleDescription = new SampleDescription(1, 0),
                     SwapEffect = SwapEffect.Discard,
                     BufferUsage = Usage.RenderTargetOutput,
                 };
 
                 this.swapChain = dxgiFactory.CreateSwapChain(this.device, swapchainDesc);
-                dxgiFactory.MakeWindowAssociation(this.window.Handle, WindowAssociationFlags.IgnoreAll);
+                dxgiFactory.MakeWindowAssociation(this.Window.Handle, WindowAssociationFlags.IgnoreAll);
 
                 this.backBuffer = this.swapChain.GetBuffer<ID3D11Texture2D>(0);
                 this.renderView = this.device.CreateRenderTargetView(backBuffer);
@@ -413,13 +414,13 @@ namespace Somno.UI.Engine
                 this.renderView.Dispose();
                 this.backBuffer.Dispose();
 
-                this.swapChain.ResizeBuffers(1, this.window.Dimensions.Width, this.window.Dimensions.Height, this.format, SwapChainFlags.None);
+                this.swapChain.ResizeBuffers(1, this.Window.Dimensions.Width, this.Window.Dimensions.Height, this.format, SwapChainFlags.None);
 
                 backBuffer = this.swapChain.GetBuffer<ID3D11Texture2D1>(0);
                 renderView = this.device.CreateRenderTargetView(backBuffer);
             }
 
-            this.renderer.Resize(this.window.Dimensions.Width, this.window.Dimensions.Height);
+            this.renderer.Resize(this.Window.Dimensions.Width, this.Window.Dimensions.Height);
         }
 
         private async Task InitializeResources()
@@ -454,7 +455,7 @@ namespace Somno.UI.Engine
                 throw new Exception($"Failed to Register class of name {this.wndClass.ClassName}");
             }
 
-            this.window = new Win32Window(
+            this.Window = new Win32Window(
                 wndClass.ClassName,
                 800,
                 600,
@@ -464,10 +465,10 @@ namespace Somno.UI.Engine
                 WindowStyles.WS_POPUP,
                 WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST);
             this.renderer = new ImGuiRenderer(device, deviceContext, 800, 600);
-            this.inputhandler = new ImGuiInputHandler(this.window.Handle);
+            this.inputhandler = new ImGuiInputHandler(this.Window.Handle);
             this.overlayIsReady = true;
             await this.PostInitialized();
-            User32.ShowWindow(this.window.Handle, ShowWindowCommand.ShowMaximized);
+            User32.ShowWindow(this.Window.Handle, ShowWindowCommand.ShowMaximized);
             InitTransparency();
         }
 
@@ -479,7 +480,7 @@ namespace Somno.UI.Engine
         /// </param>
         internal void InitTransparency()
         {
-            var handle = this.window.Handle;
+            var handle = this.Window.Handle;
 
             clickableStyles = (WindowExStyles)User32.GetWindowLong(handle, (int)WindowLongParam.GWL_EXSTYLE);
             notClickableStyles = clickableStyles | WindowExStyles.WS_EX_LAYERED | WindowExStyles.WS_EX_TRANSPARENT;
@@ -496,7 +497,7 @@ namespace Somno.UI.Engine
         /// <param name="wantClickable">Set to true if you want to make the window clickable otherwise false.</param>
         internal void SetOverlayClickable(bool wantClickable)
         {
-            var handle = this.window.Handle;
+            var handle = this.Window.Handle;
 
             if (isClickable ^ wantClickable) {
                 if (wantClickable) {
@@ -518,8 +519,8 @@ namespace Somno.UI.Engine
                         case SizeMessage.SIZE_RESTORED:
                         case SizeMessage.SIZE_MAXIMIZED:
                             var lp = (int)lParam;
-                            this.window.Dimensions.Width = lp & 0xFFFF;
-                            this.window.Dimensions.Height = lp >> 16;
+                            this.Window.Dimensions.Width = lp & 0xFFFF;
+                            this.Window.Dimensions.Height = lp >> 16;
                             this.OnResize();
                             break;
                         default:

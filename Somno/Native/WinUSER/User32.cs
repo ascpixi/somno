@@ -267,5 +267,11 @@ namespace Somno.Native.WinUSER
         public static extern int GetSystemMetrics(
             int smIndex
         );
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        public static extern bool SetWindowDisplayAffinity(
+          [In] IntPtr hWnd,
+          [In] uint dwAffinity
+        );
     }
 }

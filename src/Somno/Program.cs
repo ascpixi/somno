@@ -13,9 +13,9 @@ namespace Somno
     internal class Program
     {
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            //await SafetyCheck.VerifyGenuine();
+            SafetyCheck.VerifyGenuine();
             Kernel32.SetConsoleCtrlHandler(ConsoleExitHandler, true);
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit(false);
 

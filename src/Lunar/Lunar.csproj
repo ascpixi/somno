@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<Target Name="ApplyILTransformations" AfterTargets="Compile">
+		<PropertyGroup>
+			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+			<ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/Somno.ILTransformer.exe</ILTransformerBin>
+			<TargetPath>$(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/Lunar.dll</TargetPath>
+		</PropertyGroup>
+
+		<Exec Command="$(ILTransformerBin) $(TargetPath)"></Exec>
+	</Target>
+
+	<Import Project="..\Somno.Common\Somno.Common.projitems" Label="Shared" />
+</Project>

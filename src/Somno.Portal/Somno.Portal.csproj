@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PublishAot>true</PublishAot>
+        <NativeLib>Shared</NativeLib>
+		<IlcDisableReflection>true</IlcDisableReflection>
+		<PublishTrimmed>true</PublishTrimmed>
+		<FileAlignment>512</FileAlignment>
+		<DebugType>none</DebugType>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+		<Optimize>true</Optimize>
+		<IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+		<IlcDisableUnhandledExceptionExperience>true</IlcDisableUnhandledExceptionExperience>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<Target Name="ApplyILTransformations" BeforeTargets="IlcCompile">
+		<PropertyGroup>
+			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+			<ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/Somno.ILTransformer.exe</ILTransformerBin>
+			<TargetPath>$(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64/Somno.Portal.dll</TargetPath>
+		</PropertyGroup>
+
+		<Exec Command="$(ILTransformerBin) $(TargetPath)"></Exec>
+	</Target>
+
+	<Import Project="..\Somno.Common\Somno.Common.projitems" Label="Shared" />
+</Project>

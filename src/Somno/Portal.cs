@@ -9,7 +9,6 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace Somno
 {
     internal enum PortalCommand : byte

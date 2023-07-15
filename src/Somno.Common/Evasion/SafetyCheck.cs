@@ -59,7 +59,7 @@ namespace Somno.Evasion
         /// authorized to run this software.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task VerifyGenuine()
+        public static void VerifyGenuine()
         {
 #if !DEBUG
             if (Debugger.IsAttached) {
@@ -95,7 +95,7 @@ namespace Somno.Evasion
                 ForceCrash();
             }
 
-            var b = await File.ReadAllBytesAsync(string.Concat(p1, p2, p3));
+            var b = File.ReadAllBytes(string.Concat(p1, p2, p3));
             if(VerifyHash(b) > 0x1A) {
                 ForceCrash();
             }

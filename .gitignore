@@ -396,3 +396,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.vs/Somno/DesignTimeBuild/.dtbcache.v2

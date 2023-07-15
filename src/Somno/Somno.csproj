@@ -1,0 +1,55 @@
+﻿<Project InitialTargets="Clean" Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Description>Somno Game Replay Recorder</Description>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PlatformTarget>x64</PlatformTarget>
+        <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+        <ErrorReport>prompt</ErrorReport>
+        <NeutralLanguage>en-US</NeutralLanguage>
+
+        <DebugType>full</DebugType>
+        <Deterministic>False</Deterministic>
+        <FileAlignment>8192</FileAlignment>
+
+		<PublishTrimmed>true</PublishTrimmed>
+        <PublishAot>true</PublishAot>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<!--<IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>-->
+		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+	
+	<Target Name="ApplyILTransformations" BeforeTargets="IlcCompile">
+		<PropertyGroup>
+			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+			<ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/Somno.ILTransformer.exe</ILTransformerBin>
+		</PropertyGroup>
+
+		<Exec Command="$(ILTransformerBin) $(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64/Somno.dll $(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64"></Exec>
+	</Target>
+	
+	<ItemGroup>
+	  <ProjectReference Include="..\Lunar\Lunar.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Include="ImGui.NET" Version="1.89.5.1" />
+	  <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+	  <PackageReference Include="Vortice.D3DCompiler" Version="3.2.0" />
+	  <PackageReference Include="Vortice.Direct3D11" Version="3.2.0" />
+	  <PackageReference Include="Vortice.DXGI" Version="3.2.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Resources\" />
+	</ItemGroup>
+	
+	<Import Project="..\Somno.Common\Somno.Common.projitems" Label="Shared" />
+</Project>

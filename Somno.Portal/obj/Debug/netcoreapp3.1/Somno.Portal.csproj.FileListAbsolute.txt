@@ -1,5 +1,0 @@
-\\192.168.100.1\profiles$\krupabar\Documents\GitHub\somno-dev\Somno.Portal\obj\Debug\netcoreapp3.1\Somno.Portal.csproj.AssemblyReference.cache
-\\192.168.100.1\profiles$\krupabar\Documents\GitHub\somno-dev\Somno.Portal\obj\Debug\netcoreapp3.1\Somno.Portal.GeneratedMSBuildEditorConfig.editorconfig
-\\192.168.100.1\profiles$\krupabar\Documents\GitHub\somno-dev\Somno.Portal\obj\Debug\netcoreapp3.1\Somno.Portal.AssemblyInfoInputs.cache
-\\192.168.100.1\profiles$\krupabar\Documents\GitHub\somno-dev\Somno.Portal\obj\Debug\netcoreapp3.1\Somno.Portal.AssemblyInfo.cs
-\\192.168.100.1\profiles$\krupabar\Documents\GitHub\somno-dev\Somno.Portal\obj\Debug\netcoreapp3.1\Somno.Portal.csproj.CoreCompileInputs.cache

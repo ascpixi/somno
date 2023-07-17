@@ -65,15 +65,9 @@ HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     return (HMODULE)hModule;
 }
 
-// A manual implementation of LoadLibraryA. Calls WwLoadLibraryW.
-HMODULE WwLoadLibraryA(LPCSTR lpFileName) {
-    USES_CONVERSION;
-    return WwLoadLibraryW(CA2W(lpFileName));
-}
-
 bool initialize_winwrapper() {
     if (ww_kernel32 == NULL) {
-        ww_kernel32 = WwLoadLibraryA("kernel32.dll");
+        ww_kernel32 = WwLoadLibraryW(str_encrypted_w(L"kernel32.dll"));
 
         if (ww_kernel32 == NULL) {
             LOG_ERROR("Could not load kernel32.dll when loading dynamically linked functions.");

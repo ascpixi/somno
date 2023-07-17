@@ -37,7 +37,7 @@ namespace Somno.UI.Engine
         private ID3D11RenderTargetView renderView;
 
         private ImGuiRenderer renderer;
-        private ImGuiInputHandler inputhandler;
+        private ImGuiInputHandler inputHandler;
 
         private bool _disposedValue;
         private IntPtr selfPointer;
@@ -103,6 +103,18 @@ namespace Somno.UI.Engine
             this.cancellationTokenSource = new();
             this.format = Format.R8G8B8A8_UNorm;
             this.loadedTexturesPtrs = new();
+
+            Window = null!;
+            device = null!;
+            swapChain = null!;
+            deviceContext = null!;
+            backBuffer = null!;
+            renderView = null!;
+            renderer = null!;
+            inputHandler = null!;
+            renderThread = null!;
+            fontPathName = null!;
+
             if (dpiAware) {
                 User32.SetProcessDPIAware();
             }
@@ -364,20 +376,18 @@ namespace Somno.UI.Engine
             while (!token.IsCancellationRequested) {
                 deltaTime = stopwatch.ElapsedTicks / (float)Stopwatch.Frequency;
                 stopwatch.Restart();
-                this.Window.PumpEvents();
-                SetOverlayClickable(this.inputhandler.Update());
-                this.renderer.Update(deltaTime, () => { Render(); });
+                this.Window.PumpEvents(); // hot 1.4%
+                SetOverlayClickable(this.inputHandler.Update()); // hot 7%
+                this.renderer.Update(deltaTime, Render);
                 this.deviceContext.OMSetRenderTargets(renderView);
                 this.deviceContext.ClearRenderTargetView(renderView, clearColor);
-                this.renderer.Render();
-                if (VSync) {
-                    this.swapChain.Present(1, PresentFlags.None); // Present with vsync
-                }
-                else {
-                    this.swapChain.Present(0, PresentFlags.None); // Present without vsync
-                }
+                this.renderer.Render(); // hot 4%
+
+                this.swapChain.Present(0, PresentFlags.None); // hot 15%
 
                 this.ReplaceFontIfRequired();
+
+                Thread.Sleep(8);
             }
         }
 
@@ -465,7 +475,7 @@ namespace Somno.UI.Engine
                 WindowStyles.WS_POPUP,
                 WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST);
             this.renderer = new ImGuiRenderer(device, deviceContext, 800, 600);
-            this.inputhandler = new ImGuiInputHandler(this.Window.Handle);
+            this.inputHandler = new ImGuiInputHandler(this.Window.Handle);
             this.overlayIsReady = true;
             await this.PostInitialized();
             User32.ShowWindow(this.Window.Handle, ShowWindowCommand.ShowMaximized);
@@ -541,7 +551,7 @@ namespace Somno.UI.Engine
         private IntPtr WndProc(IntPtr hWnd, uint msg, UIntPtr wParam, IntPtr lParam)
         {
             if (this.overlayIsReady) {
-                if (this.inputhandler.ProcessMessage((WindowMessage)msg, wParam, lParam) ||
+                if (this.inputHandler.ProcessMessage((WindowMessage)msg, wParam, lParam) ||
                     ProcessMessage((WindowMessage)msg, wParam, lParam)) {
                     return IntPtr.Zero;
                 }

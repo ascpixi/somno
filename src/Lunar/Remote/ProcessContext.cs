@@ -37,27 +37,69 @@ internal sealed class ProcessContext
         Process = process;
     }
 
-    internal void CallRoutine(nint routineAddress, CallingConvention callingConvention, params dynamic[] arguments)
+    static long PointerTransformer64(object o)
     {
+        if(o is IntPtr iptr) {
+            return (long)iptr;
+        }
+
+        if(o is UIntPtr uiptr) {
+            return unchecked((long)uiptr);
+        }
+
+        return Convert.ToInt64(o);
+    }
+
+    static int PointerTransformer32(object o)
+    {
+        if (o is IntPtr iptr) {
+            return (int)iptr;
+        }
+
+        if (o is UIntPtr uiptr) {
+            return unchecked((int)uiptr);
+        }
+
+        return Convert.ToInt32(o);
+    }
+
+    internal void CallRoutine(nint routineAddress, CallingConvention callingConvention, params object[] arguments)
+    {
+        if(Process.HasExited) {
+            throw new InvalidOperationException("Cannot read the memory of a process that has exited.");
+        }
+
         // Assemble the shellcode used to call the routine
 
         Span<byte> shellcodeBytes;
 
         if (Architecture == Architecture.X86)
         {
-            var descriptor = new CallDescriptor<int>(routineAddress, Array.ConvertAll(arguments, argument => (int) argument), callingConvention, 0);
+            var descriptor = new CallDescriptor<int>(
+                routineAddress,
+                arguments.Select(PointerTransformer32).ToList(),
+                callingConvention,
+                0
+            );
+
             shellcodeBytes = Assembler.AssembleCall32(descriptor);
         }
         else
         {
-            var descriptor = new CallDescriptor<long>(routineAddress, Array.ConvertAll(arguments, argument => (long) argument), callingConvention, 0);
+            var descriptor = new CallDescriptor<long>(
+                routineAddress,
+                arguments.Select(PointerTransformer64).ToList(),
+                callingConvention,
+                0
+            );
+
             shellcodeBytes = Assembler.AssembleCall64(descriptor);
         }
 
         ExecuteShellcode(shellcodeBytes);
     }
 
-    internal T CallRoutine<T>(nint routineAddress, CallingConvention callingConvention, params dynamic[] arguments) where T : unmanaged
+    internal T CallRoutine<T>(nint routineAddress, CallingConvention callingConvention, params object[] arguments) where T : unmanaged
     {
         var returnSize = typeof(T) == typeof(nint) ? Architecture == Architecture.X86 ? sizeof(int) : sizeof(long) : Unsafe.SizeOf<T>();
         var returnAddress = Process.AllocateBuffer(returnSize, ProtectionType.ReadWrite);
@@ -70,12 +112,24 @@ internal sealed class ProcessContext
 
             if (Architecture == Architecture.X86)
             {
-                var descriptor = new CallDescriptor<int>(routineAddress, Array.ConvertAll(arguments, argument => (int) argument), callingConvention, returnAddress);
+                var descriptor = new CallDescriptor<int>(
+                    routineAddress,
+                    arguments.Select(PointerTransformer32).ToList(),
+                    callingConvention,
+                    returnAddress
+                );
+
                 shellcodeBytes = Assembler.AssembleCall32(descriptor);
             }
             else
             {
-                var descriptor = new CallDescriptor<long>(routineAddress, Array.ConvertAll(arguments, argument => (long) argument), callingConvention, returnAddress);
+                var descriptor = new CallDescriptor<long>(
+                    routineAddress,
+                    arguments.Select(PointerTransformer64).ToList(),
+                    callingConvention,
+                    returnAddress
+                );
+
                 shellcodeBytes = Assembler.AssembleCall64(descriptor);
             }
 
@@ -166,6 +220,7 @@ internal sealed class ProcessContext
             Process.WriteSpan(shellcodeAddress, shellcodeBytes);
 
             // Create a thread to execute the shellcode
+
 
             var status = Ntdll.RtlCreateUserThread(Process.SafeHandle, 0, false, 0, 0, 0, shellcodeAddress, 0, out var threadHandle, 0);
 

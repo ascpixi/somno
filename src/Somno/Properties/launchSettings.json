@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Somno": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\asc\\source\\repos\\Somno\\src\\Somno\\bin\\release\\net7.0\\win-x64\\publish"
     }
   }
 }

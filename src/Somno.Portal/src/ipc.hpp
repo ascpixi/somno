@@ -7,7 +7,7 @@
 #include <inttypes.h>
 
 #define IPC_MEMORY_SIZE   sizeof(ipc_region_t)
-#define IPC_MEMORY_NAME   "AqW5p2FhqX"
+#define IPC_MEMORY_NAME   "Global\\AqW5p2FhqX"
 #define IPC_HANDSHAKE_SIG 0x488D0411EBFE90C3ul
 #define IPC_HANDSHAKE_RET 0xDEADBEEFDEADBEEFul
 
@@ -124,6 +124,7 @@ ipc_region* open_ipc_memory() {
 
 // Closes a previously opened pointer to shared IPC memory.
 void close_ipc_memory(ipc_region* map) {
+    WwFlushViewOfFile(map, sizeof(ipc_region));
     WwUnmapViewOfFile(map);
     LOG_INFO("The IPC memory region has been closed.");
 }

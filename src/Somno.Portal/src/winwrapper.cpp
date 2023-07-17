@@ -39,16 +39,76 @@ FARPROC WwGetProcAddress(HMODULE hModule, LPCSTR lpProcName) {
     return NULL;
 }
 
+static int cmpUnicodeStr(WCHAR substr[], WCHAR mystr[]) {
+    _wcslwr_s(substr, MAX_PATH);
+    _wcslwr_s(mystr, MAX_PATH);
+
+    int result = 0;
+    if (StrStrW(mystr, substr) != NULL) {
+        result = 1;
+    }
+
+    return result;
+}
+
+HMODULE WwGetModuleHandleW(LPCWSTR lModuleName) {
+    // obtaining the offset of PPEB from the beginning of TEB
+    PEB* pPeb = (PEB*)__readgsqword(0x60);
+
+    // for x86
+    // PEB* pPeb = (PEB*)__readgsqword(0x30);
+
+    // obtaining the address of the head node in a linked list 
+    // which represents all the models that are loaded into the process.
+    PEB_LDR_DATA* Ldr = pPeb->Ldr;
+    LIST_ENTRY* ModuleList = &Ldr->InMemoryOrderModuleList;
+
+    // iterating to the next node. this will be our starting point.
+    LIST_ENTRY* pStartListEntry = ModuleList->Flink;
+
+    // iterating through the linked list.
+    WCHAR mystr[MAX_PATH] = { 0 };
+    WCHAR substr[MAX_PATH] = { 0 };
+    for (LIST_ENTRY* pListEntry = pStartListEntry; pListEntry != ModuleList; pListEntry = pListEntry->Flink) {
+
+        // getting the address of current LDR_DATA_TABLE_ENTRY (which represents the DLL).
+        LDR_DATA_TABLE_ENTRY* pEntry = (LDR_DATA_TABLE_ENTRY*)((BYTE*)pListEntry - sizeof(LIST_ENTRY));
+
+        // checking if this is the DLL we are looking for
+        memset(mystr, 0, MAX_PATH * sizeof(WCHAR));
+        memset(substr, 0, MAX_PATH * sizeof(WCHAR));
+        wcscpy_s(mystr, MAX_PATH, pEntry->FullDllName.Buffer);
+        wcscpy_s(substr, MAX_PATH, lModuleName);
+        if (cmpUnicodeStr(substr, mystr)) {
+            // returning the DLL base address.
+            return (HMODULE)pEntry->DllBase;
+        }
+    }
+
+    // the needed DLL wasn't found
+    LOG_ERROR("WwGetModuleHandleW: failed to get a handle to %ls.", lModuleName);
+    return NULL;
+}
+
 // A manual implementation of LoadLibraryW.
 HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     UNICODE_STRING ustrModule;
     HANDLE hModule = NULL;
 
-    HMODULE hNtdll = GetModuleHandleA(str_encrypted("ntdll.dll"));
+    HMODULE hNtdll = WwGetModuleHandleW(str_encrypted_w(L"ntdll.dll"));
+    if (hNtdll == NULL) {
+        return NULL;
+    }
+
     pRtlInitUnicodeString RtlInitUnicodeString = (pRtlInitUnicodeString)WwGetProcAddress(
         hNtdll,
         str_encrypted("RtlInitUnicodeString")
     );
+
+    if (RtlInitUnicodeString == NULL) {
+        LOG_ERROR("Could not get the address of RtlInitUnicodeString.");
+        return NULL;
+    }
 
     RtlInitUnicodeString(&ustrModule, lpFileName);
 
@@ -58,6 +118,7 @@ HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     );
 
     if (!myLdrLoadDll) {
+        LOG_ERROR("Could not get the address of LdrLoadDll.");
         return NULL;
     }
 
@@ -111,6 +172,7 @@ bool initialize_winwrapper() {
         return false;
     }
 
+    LOG_INFO("All dynamically loaded functions were successfully initialized.");
     return true;
 }
 

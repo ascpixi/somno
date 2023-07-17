@@ -18,7 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Somno.Portal", "Somno.Portal\Somno.Portal.csproj", "{5E5EF3E2-3778-4B6F-919D-D20622AF536A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Somno.Packager", "Somno.Packager\Somno.Packager.csproj", "{94C89EFE-F7BE-4212-949B-80D77F965F2B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Somno.Portal", "Somno.Portal\Somno.Portal.vcxproj", "{754F7327-1500-4176-A875-1389F2C16F9A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,27 +68,35 @@ Global
 		{AC474E1D-5D8E-4D7D-B6E2-B2C7061A0DA0}.Release|x64.Build.0 = Release|Any CPU
 		{AC474E1D-5D8E-4D7D-B6E2-B2C7061A0DA0}.Release|x86.ActiveCfg = Release|Any CPU
 		{AC474E1D-5D8E-4D7D-B6E2-B2C7061A0DA0}.Release|x86.Build.0 = Release|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Debug|x64.Build.0 = Debug|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Debug|x86.Build.0 = Debug|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Release|x64.ActiveCfg = Release|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Release|x64.Build.0 = Release|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Release|x86.ActiveCfg = Release|Any CPU
-		{5E5EF3E2-3778-4B6F-919D-D20622AF536A}.Release|x86.Build.0 = Release|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Debug|x64.Build.0 = Debug|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Debug|x86.Build.0 = Debug|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Release|x64.ActiveCfg = Release|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Release|x64.Build.0 = Release|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Release|x86.ActiveCfg = Release|Any CPU
+		{94C89EFE-F7BE-4212-949B-80D77F965F2B}.Release|x86.Build.0 = Release|Any CPU
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Debug|Any CPU.Build.0 = Debug|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Debug|x64.ActiveCfg = Debug|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Debug|x64.Build.0 = Debug|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Debug|x86.ActiveCfg = Debug|Win32
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Debug|x86.Build.0 = Debug|Win32
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Release|Any CPU.ActiveCfg = Release|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Release|Any CPU.Build.0 = Release|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Release|x64.ActiveCfg = Release|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Release|x64.Build.0 = Release|x64
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Release|x86.ActiveCfg = Release|Win32
+		{754F7327-1500-4176-A875-1389F2C16F9A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59D64292-1977-46D6-89C3-F097581EACD1}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Somno.Common\Somno.Common.projitems*{5e5ef3e2-3778-4b6f-919d-d20622af536a}*SharedItemsImports = 5
-		Somno.Common\Somno.Common.projitems*{e91233b7-a3ed-49ba-a990-654f108c9997}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

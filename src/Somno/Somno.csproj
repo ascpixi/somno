@@ -34,9 +34,22 @@
 
 		<Exec Command="$(ILTransformerBin) $(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64/Somno.dll $(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64"></Exec>
 	</Target>
+
+	<Target Name="PackagePortal" Condition="'$(RepackagePortalAgent)'=='true'" BeforeTargets="FindInvalidProjectReferences">
+		<PropertyGroup>
+			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+			<PackagerPath>$(SolutionDir)/Somno.Packager/bin/$(Configuration)/net7.0/win-x64/Somno.Packager.exe</PackagerPath>
+			<PortalBinaryPath>$(SolutionDir)/Somno.Portal/x64/$(Configuration)/Somno.Portal.dll</PortalBinaryPath>
+			<PortalResourcePath Condition="'$(IsIDE)'!='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64/publish/resource/data001.bin</PortalResourcePath>
+			<PortalResourcePath Condition="'$(IsIDE)'=='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/resource/data001.bin</PortalResourcePath>
+		</PropertyGroup>
+
+		<Exec Command="$(PackagerPath) pack d2889fe9933f8341cbc923929fb94761 $(PortalBinaryPath) $(PortalResourcePath)" />
+	</Target>
 	
 	<ItemGroup>
 	  <ProjectReference Include="..\Lunar\Lunar.csproj" />
+	  <ProjectReference Include="..\Somno.Packager\Somno.Packager.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -46,10 +59,4 @@
 	  <PackageReference Include="Vortice.Direct3D11" Version="3.2.0" />
 	  <PackageReference Include="Vortice.DXGI" Version="3.2.0" />
 	</ItemGroup>
-	
-	<ItemGroup>
-	  <Folder Include="Resources\" />
-	</ItemGroup>
-	
-	<Import Project="..\Somno.Common\Somno.Common.projitems" Label="Shared" />
 </Project>

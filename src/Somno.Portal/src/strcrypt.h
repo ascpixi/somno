@@ -1,47 +1,91 @@
 #pragma once
+#include <string>
+#include <array>
+#include <cstdarg>
 
-#include <stdint.h>
+// Source: https://stackoverflow.com/a/34981037/13153269
 
-constexpr uint32_t modulus() {
-    return 0x7fffffff;
-}
+#define BEGIN_NAMESPACE( x ) namespace x {
+#define END_NAMESPACE }
 
-constexpr uint32_t prng(const uint32_t input) {
-    return (input * 48271) % modulus();
-}
+BEGIN_NAMESPACE(XorCompileTime)
 
-template<size_t N>
-constexpr uint32_t seed(const char(&entropy)[N], const uint32_t iv = 0) {
-    auto value{ iv };
-    for (size_t i{ 0 }; i < N; i++) {
-        // Xor 1st byte of seed with input byte
-        value = (value & ((~0) << 8)) | ((value & 0xFF) ^ entropy[i]);
-        // Rotate left 1 byte
-        value = value << 8 | value >> ((sizeof(value) * 8) - 8);
-    }
-    // The seed is required to be less than the modulus and odd
-    while (value > modulus()) value = value >> 1;
-    return value << 1 | 1;
-}
+constexpr auto time = __TIME__;
+constexpr auto seed = static_cast<int>(time[7]) + static_cast<int>(time[6]) * 10 + static_cast<int>(time[4]) * 60 + static_cast<int>(time[3]) * 600 + static_cast<int>(time[1]) * 3600 + static_cast<int>(time[0]) * 36000;
 
-template<typename T, size_t N>
-struct encrypted {
-    int seed;
-    T data[N];
+template < int N >
+struct RandomGenerator
+{
+private:
+    static constexpr unsigned a = 16807; // 7^5
+    static constexpr unsigned m = 2147483647; // 2^31 - 1
+
+    static constexpr unsigned s = RandomGenerator< N - 1 >::value;
+    static constexpr unsigned lo = a * (s & 0xFFFF); // Multiply lower 16 bits by 16807
+    static constexpr unsigned hi = a * (s >> 16); // Multiply higher 16 bits by 16807
+    static constexpr unsigned lo2 = lo + ((hi & 0x7FFF) << 16); // Combine lower 15 bits of hi with lo's upper bits
+    static constexpr unsigned hi2 = hi >> 15; // Discard lower 15 bits of hi
+    static constexpr unsigned lo3 = lo2 + hi;
+
+public:
+    static constexpr unsigned max = m;
+    static constexpr unsigned value = lo3 > m ? lo3 - m : lo3;
 };
 
-template<size_t N>
-constexpr auto crypt(const char(&input)[N], const uint32_t seed = 0) {
-    encrypted<char, N> blob{};
-    blob.seed = seed;
-    for (uint32_t index{ 0 }, stream{ seed }; index < N; index++) {
-        blob.data[index] = input[index] ^ stream;
-        stream = prng(stream);
-    }
-    return blob;
-}
+template <>
+struct RandomGenerator< 0 >
+{
+    static constexpr unsigned value = seed;
+};
 
-#define str_encrypted(STRING) ([&] {                             \
-    constexpr auto _{ crypt(STRING, seed(__FILE__, __LINE__)) }; \
-    return crypt(_.data, _.seed).data;                           \
-}())
+template < int N, int M >
+struct RandomInt
+{
+    static constexpr auto value = RandomGenerator< N + 1 >::value % M;
+};
+
+template < int N >
+struct RandomChar
+{
+    static const char value = static_cast<char>(1 + RandomInt< N, 0x7F - 1 >::value);
+};
+
+template < size_t N, int K, typename Char >
+struct XorString
+{
+private:
+    const char _key;
+    std::array< Char, N + 1 > _encrypted;
+
+    constexpr Char enc(Char c) const
+    {
+        return c ^ _key;
+    }
+
+    Char dec(Char c) const
+    {
+        return c ^ _key;
+    }
+
+public:
+    template < size_t... Is >
+    constexpr __forceinline XorString(const Char* str, std::index_sequence< Is... >) : _key(RandomChar< K >::value), _encrypted{ enc(str[Is])... }
+    {
+    }
+
+    __forceinline decltype(auto) decrypt(void)
+    {
+        for (size_t i = 0; i < N; ++i) {
+            _encrypted[i] = dec(_encrypted[i]);
+        }
+        _encrypted[N] = '\0';
+        return _encrypted.data();
+    }
+};
+
+END_NAMESPACE
+
+//Wrapper functions to work in all functions below
+#define str_encrypted( s ) []{ constexpr XorCompileTime::XorString< sizeof(s)/sizeof(char) - 1, __COUNTER__, char > expr( s, std::make_index_sequence< sizeof(s)/sizeof(char) - 1>() ); return expr; }().decrypt()
+#define str_encrypted_w( s ) []{ constexpr XorCompileTime::XorString< sizeof(s)/sizeof(wchar_t) - 1, __COUNTER__, wchar_t > expr( s, std::make_index_sequence< sizeof(s)/sizeof(wchar_t) - 1>() ); return expr; }().decrypt()
+

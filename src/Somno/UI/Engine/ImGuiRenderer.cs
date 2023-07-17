@@ -242,7 +242,7 @@ namespace Somno.UI.Engine
             ctx.RSSetViewport(viewport);
             int stride = sizeof(ImDrawVert);
             ctx.IASetInputLayout(devObj.InputLayout);
-            ctx.IASetVertexBuffer(0, vertexBuffer, stride);
+            ctx.IASetVertexBuffer(0, vertexBuffer!, stride);
             ctx.IASetIndexBuffer(indexBuffer, sizeof(ImDrawIdx) == 2 ? Format.R16_UInt : Format.R32_UInt, 0);
             ctx.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             ctx.VSSetShader(devObj.VertexShader);

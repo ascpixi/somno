@@ -129,7 +129,7 @@ public sealed class LibraryMapper
 
             CallInitialisationRoutines(DllReason.ProcessAttach);
         }
-        catch (Exception ex)
+        catch
         {
             if(!_processContext.Process.HasExited) {
                 while (cleanupStack.TryPop(out var cleanupRoutine)) {
@@ -275,17 +275,8 @@ public sealed class LibraryMapper
             throw new NullReferenceException("The entry point address is null.");
         }
 
-        //var sp = new byte[] {
-        //    0x48, 0xc7, 0xc0, 0x69, 0x00, 0x00, 0x00,
-        //    0xc3
-        //};
-
-        //_processContext.Process.WriteSpan(entryPointAddress, sp.AsSpan());
-
-        byte ret = _processContext.CallRoutine<byte>(entryPointAddress, CallingConvention.StdCall, DllBaseAddress, reason, 0);
-
-        if (ret == 0)
-        {
+        bool ret = _processContext.CallRoutine<bool>(entryPointAddress, CallingConvention.StdCall, DllBaseAddress, reason, 0);
+        if (!ret) {
             throw new ApplicationException($"Failed to call the DLL entry point with {reason:G}");
         }
     }

@@ -131,6 +131,10 @@ namespace Somno.IPC
         /// <exception cref="InvalidOperationException">Thrown when a type is given, of which the size exceeds the IPC shared memory region.</exception>
         public T ReadProcessMemory<T>(ulong address) where T : unmanaged
         {
+            if(address == 0) {
+                throw new InvalidOperationException("Attempted to read from a null memory location.");
+            }
+
             int size = sizeof(T);
             if (size > 32) {
                 throw new InvalidOperationException($"Tried to read {size} at once; cannot read more than 32.");
@@ -159,10 +163,13 @@ namespace Somno.IPC
             if(ipc != null) {
                 ipc->RequestID = PortalIPCRequest.Terminate;
                 ipc->PendingRequest = true;
+
+                Terminal.LogInfo("Waiting for the portal agent to terminate...");
                 while(ipc->PendingRequest) {
                     Thread.Sleep(0);
                 }
 
+                Terminal.LogInfo("The portal agent has acknowledged the termination request.");
                 ipc = null;
             }
 

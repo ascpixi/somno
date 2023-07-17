@@ -4,6 +4,6 @@
     {
         Handshake = 0xAA,
         ReadProcessMemory = 0xB1,
-        Terminate = 0xB2
+        Terminate = 0xBF
     }
 }

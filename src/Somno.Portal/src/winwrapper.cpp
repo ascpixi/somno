@@ -9,7 +9,7 @@ HMODULE ww_kernel32;
 CreateFileMappingAProc ww_fptrCreateFileMappingA;
 MapViewOfFileProc      ww_fptrMapViewOfFile;
 UnmapViewOfFileProc    ww_fptrUnmapViewOfFile;
-ReadProcessMemoryProc  ww_fptrReadProcessMemory;
+FlushViewOfFileProc    ww_fptrFlushViewOfFile;
 
 typedef VOID(NTAPI* pRtlInitUnicodeString)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
 typedef NTSTATUS(NTAPI* pLdrLoadDll) (
@@ -154,21 +154,21 @@ bool initialize_winwrapper() {
         return false;
     }
 
+    ww_fptrFlushViewOfFile = (FlushViewOfFileProc)WwGetProcAddress(
+        ww_kernel32, str_encrypted("FlushViewOfFile")
+    );
+
+    if (ww_fptrFlushViewOfFile == NULL) {
+        LOG_ERROR("Could not load FlushViewOfFile from kernel32.dll.");
+        return false;
+    }
+
     ww_fptrUnmapViewOfFile = (UnmapViewOfFileProc)WwGetProcAddress(
         ww_kernel32, str_encrypted("UnmapViewOfFile")
     );
 
     if (ww_fptrUnmapViewOfFile == NULL) {
         LOG_ERROR("Could not load UnmapViewOfFile from kernel32.dll.");
-        return false;
-    }
-
-    ww_fptrReadProcessMemory = (ReadProcessMemoryProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("ReadProcessMemory")
-    );
-
-    if (ww_fptrReadProcessMemory == NULL) {
-        LOG_ERROR("Could not load ReadProcessMemory from kernel32.dll.");
         return false;
     }
 

@@ -1,13 +1,16 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
-#include <Windows.h>
-#include <stdint.h>
-#include <intrin.h>
-#include "winwrapper.h"
-#include "strcrypt.h"
-#include "ipc.hpp"
-#include "logging.hpp"
 #include <iostream>
 #include <inttypes.h>
+#include <stdint.h>
+
+#include <intrin.h>
+#include <Windows.h>
+
+#include "winwrapper.h"
+#include "logging.hpp"
+#include "strcrypt.h"
+#include "memio.h"
+#include "ipc.hpp"
 
 enum portal_state : uint8_t {
     NotInitialized,
@@ -35,12 +38,16 @@ DWORD WINAPI main_thread(void* lpParam) {
     }
 
     while (run_state == portal_state::Running) {
-        while (!ipc->ctrl_pending_request) {
+        while (!ipc->ctrl_pending_request && run_state == portal_state::Running) {
             // Signal to the CPU that this we're spinning (although this is non-busy spinning)
             _mm_pause();
 
             // "If you specify 0 milliseconds, the thread will relinquish the remainder of its time slice but remain ready"
             SleepEx(0, false);
+        }
+
+        if (run_state != portal_state::Running) {
+            goto portal_end;
         }
 
         // Pending request detected, handle it
@@ -56,18 +63,25 @@ DWORD WINAPI main_thread(void* lpParam) {
                 auto target = (void*)ipc_payload_read64(ipc, &ipc_read_counter);
                 auto amount = ipc_payload_read32(ipc, &ipc_read_counter);
 
-                WwReadProcessMemory(handle, target, ipc->payload, amount, NULL);
+                SomnoReadVirtualMemory(handle, target, ipc->payload, amount, NULL);
                 ipc->ctrl_pending_request = 0;
+                break;
             }
 
             case ipcid_Terminate: {
+                LOG_INFO("Received a termination IPC message.");
                 run_state = portal_state::Terminated;
-                ipc->ctrl_pending_request = 0;
-                return 0;
+                goto portal_end;
             }
         }
     }
 
+    portal_end:
+
+    ipc->ctrl_pending_request = 0;
+    close_ipc_memory(ipc);
+
+    LOG_INFO("Closing main thread!");
     return 0;
 }
 

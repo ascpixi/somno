@@ -43,13 +43,21 @@ namespace Somno
 
             //Portal.EstablishConnection("ConsoleApp22");
             //uint secret = Portal.ReadProcessMemory<uint>(0x7FFB8F10D380);
-            mainPortal = new Portal("notepad");
-            //uint secret = portal.ReadProcessMemory<uint>(0x7FFDFBEAD380);
-            //Terminal.LogInfo($"The secret is {secret}!");
+            mainPortal = new Portal("ConsoleApp22");
+            Terminal.LogInfo("Portal is fine");
+
+            uint secret = mainPortal.ReadProcessMemory<uint>(0x7FFC3534D380);
+            Terminal.LogInfo($"The secret is {secret}!");
+
+            Terminal.LogInfo("OK, try two");
+
+            secret = mainPortal.ReadProcessMemory<uint>(0x7FFC3534D380);
+            Terminal.LogInfo($"The secret is {secret}!");
+
+            Terminal.LogInfo("OK!");
 
             while (true) {
                 Thread.Sleep(500);
-                Console.WriteLine("I'm still running!");
             }
         }
 

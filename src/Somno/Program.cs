@@ -6,13 +6,18 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Somno.UI;
 using System.Threading;
+using Lunar;
+using System.Linq;
+using Somno.Packager;
+using System.IO;
+using Somno.IPC;
 
 namespace Somno
 {
     [SupportedOSPlatform("Windows")]
     internal class Program
     {
-
+        static Portal? mainPortal;
         static void Main(string[] args)
         {
             SafetyCheck.VerifyGenuine();
@@ -24,29 +29,28 @@ namespace Somno
             Console.Clear();
             Terminal.Header("Somno Console v1.0.0", ConsoleColor.Black, ConsoleColor.DarkRed);
 
-            var gui = new ConfigurationGUI();
-            _ = gui.Start().ContinueWith(
-                x => {
-                    Terminal.LogError($"A {x.Exception!.GetType().Name} has been thrown in the GUI task.");
-                    foreach (var line in x.Exception.Message.Split("\n")) {
-                        Terminal.LogError($"\t{line}");
-                    }
-                },
-                TaskContinuationOptions.OnlyOnFaulted
-            );
+            //var gui = new ConfigurationGUI();
+            //_ = gui.Start().ContinueWith(
+            //    x => {
+            //        Terminal.LogError($"A {x.Exception!.GetType().Name} has been thrown in the GUI task.");
+            //        foreach (var line in x.Exception.Message.Split("\n")) {
+            //            Terminal.LogError($"\t{line}");
+            //        }
+            //    },
+            //    TaskContinuationOptions.OnlyOnFaulted
+            //);
 
-            while(true) {
+
+            //Portal.EstablishConnection("ConsoleApp22");
+            //uint secret = Portal.ReadProcessMemory<uint>(0x7FFB8F10D380);
+            mainPortal = new Portal("notepad");
+            //uint secret = portal.ReadProcessMemory<uint>(0x7FFDFBEAD380);
+            //Terminal.LogInfo($"The secret is {secret}!");
+
+            while (true) {
                 Thread.Sleep(500);
                 Console.WriteLine("I'm still running!");
             }
-
-            //HandleHijack.FindMemoryHandle("");
-
-            //Console.WriteLine("Aimbot is on!");
-            //Portal.Inject(20112);
-            ////Terminal.LogInfo("Exited from Inject.");
-            //var r = Portal.GetProcessHandlePID(0x32);
-            //Terminal.LogInfo($"Got {r} for a non-existed handle, but still a response!");
         }
 
         static bool terminating = false;
@@ -55,7 +59,7 @@ namespace Somno
             if(terminating) return;
             terminating = true;
 
-            Portal.Close();
+            mainPortal?.Close();
             Terminal.LogInfo(@"See you later! \(^ω^)");
 
             if(shouldManuallyTerminate) {

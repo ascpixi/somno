@@ -25,8 +25,12 @@
   <ItemGroup>
     <ClInclude Include="src\logging.hpp" />
     <ClInclude Include="src\ipc.hpp" />
+    <ClInclude Include="src\memio.h" />
     <ClInclude Include="src\strcrypt.h" />
     <ClInclude Include="src\winwrapper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="src\memio.asm" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -155,7 +159,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -164,6 +168,9 @@
       <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalOptions>/PDBALTPATH:A /EMITPOGOPHASEINFO %(AdditionalOptions)</AdditionalOptions>
+      <SectionAlignment>
+      </SectionAlignment>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -196,12 +203,15 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <LinkErrorReporting>NoErrorReport</LinkErrorReporting>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalOptions>/PDBALTPATH:A /EMITPOGOPHASEINFO %(AdditionalOptions)</AdditionalOptions>
+      <SectionAlignment>
+      </SectionAlignment>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -22,12 +22,9 @@ typedef LPVOID(WINAPI* MapViewOfFileProc)(
 
 typedef BOOL(WINAPI* UnmapViewOfFileProc)(LPCVOID lpBaseAddress);
 
-typedef BOOL(WINAPI* ReadProcessMemoryProc)(
-    HANDLE  hProcess,
+typedef BOOL(WINAPI* FlushViewOfFileProc)(
     LPCVOID lpBaseAddress,
-    LPVOID  lpBuffer,
-    SIZE_T  nSize,
-    SIZE_T* lpNumberOfBytesRead
+    SIZE_T dwNumberOfBytesToFlush
 );
 
 // We are forced to have the definition and implementation of inline methods
@@ -38,7 +35,7 @@ extern HMODULE ww_kernel32;
 extern CreateFileMappingAProc ww_fptrCreateFileMappingA;
 extern MapViewOfFileProc      ww_fptrMapViewOfFile;
 extern UnmapViewOfFileProc    ww_fptrUnmapViewOfFile;
-extern ReadProcessMemoryProc  ww_fptrReadProcessMemory;
+extern FlushViewOfFileProc    ww_fptrFlushViewOfFile;
 
 // Initializes the direct-load wrapper functions.
 // Returns a value that determines whether the operation has failed.
@@ -82,29 +79,20 @@ __forceinline LPVOID WwMapViewOfFile(
     );
 }
 
+// Writes to the disk a byte range within a mapped view of a file.
+// This is a wrapped function, which does uses directly imported functions.
+__forceinline BOOL WwFlushViewOfFile(
+    LPCVOID lpBaseAddress,
+    SIZE_T  dwNumberOfBytesToFlush
+) {
+    return ww_fptrFlushViewOfFile(
+        lpBaseAddress,
+        dwNumberOfBytesToFlush
+    );
+}
+
 // Unmaps a mapped view of a file from the calling process's address space.
 // This is a wrapped function, which does uses directly imported functions.
 __forceinline BOOL WwUnmapViewOfFile(LPCVOID lpBaseAddress) {
     return ww_fptrUnmapViewOfFile(lpBaseAddress);
-}
-
-// ReadProcessMemory copies the data in the specified address range from the address space
-// of the specified process into the specified buffer of the current process. Any process
-// that has a handle with PROCESS_VM_READ access can call the function.
-// 
-// This is a wrapped function, which does uses directly imported functions.
-__forceinline BOOL WwReadProcessMemory(
-    HANDLE  hProcess,
-    LPCVOID lpBaseAddress,
-    LPVOID  lpBuffer,
-    SIZE_T  nSize,
-    SIZE_T* lpNumberOfBytesRead
-) {
-    return ww_fptrReadProcessMemory(
-        hProcess,
-        lpBaseAddress,
-        lpBuffer,
-        nSize,
-        lpNumberOfBytesRead
-    );
 }

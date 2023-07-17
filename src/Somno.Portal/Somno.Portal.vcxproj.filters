@@ -19,6 +19,7 @@
     <ClInclude Include="src\winwrapper.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\memio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\portal.cpp">
@@ -27,5 +28,10 @@
     <ClCompile Include="src\winwrapper.cpp">
       <Filter>src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="src\memio.asm">
+      <Filter>src</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

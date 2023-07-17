@@ -11,7 +11,7 @@
 	  <DebugType>none</DebugType>
 	</PropertyGroup>
 
-	<Target Name="ApplyILTransformations" AfterTargets="Compile">
+	<!--<Target Name="ApplyILTransformations" AfterTargets="Compile">
 		<PropertyGroup>
 			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
 			<ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/Somno.ILTransformer.exe</ILTransformerBin>
@@ -19,7 +19,5 @@
 		</PropertyGroup>
 
 		<Exec Command="$(ILTransformerBin) $(TargetPath)"></Exec>
-	</Target>
-
-	<Import Project="..\Somno.Common\Somno.Common.projitems" Label="Shared" />
+	</Target>-->
 </Project>

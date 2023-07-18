@@ -19,7 +19,7 @@ internal sealed class PeImage
 
         if (peReader.PEHeaders.PEHeader is null || !peReader.PEHeaders.IsDll)
         {
-            throw new BadImageFormatException("The provided file was not a valid DLL");
+            throw new BadImageFormatException("The provided file is not a valid PE binary image, or is not a dynamic-link library.");
         }
 
         ExportDirectory = new ExportDirectory(peReader.PEHeaders, imageBytes);

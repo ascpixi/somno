@@ -129,12 +129,12 @@ internal sealed class SymbolHandler
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Failed to download required files [{pdbData.Path}] with status code {response.StatusCode}");
+            throw new HttpRequestException($"Failed to download [{pdbData.Path}] with HTTP status {response.StatusCode}.");
         }
 
         if (response.Content.Headers.ContentLength is null)
         {
-            throw new HttpRequestException($"Failed to retrieve content headers for required files [{pdbData.Path}]");
+            throw new HttpRequestException($"Could not retrieve the content headers for required files. [{pdbData.Path}]");
         }
 
         using var contentStream = response.Content.ReadAsStream();

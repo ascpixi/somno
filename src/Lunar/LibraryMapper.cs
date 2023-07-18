@@ -42,50 +42,21 @@ public sealed class LibraryMapper
     {
         if (process.HasExited)
         {
-            throw new ArgumentException("The provided process is not currently running");
+            throw new ArgumentException("The process is not running.");
         }
 
         if (dllBytes.IsEmpty)
         {
-            throw new ArgumentException("The provided DLL bytes were empty");
+            throw new ArgumentException("The provided binary image was empty.");
         }
 
-        if (!Environment.Is64BitProcess && process.GetArchitecture() == Architecture.X64)
-        {
-            throw new NotSupportedException("The provided process cannot be mapped into from an x86 build");
-        }
+        //if (!Environment.Is64BitProcess && process.GetArchitecture() == Architecture.X64)
+        //{
+        //    throw new NotSupportedException("The provided process cannot be mapped into from an x86 build");
+        //}
 
         _dllBytes = dllBytes.ToArray();
         _fileResolver = new FileResolver(process, null);
-        _mappingFlags = mappingFlags;
-        _peImage = new PeImage(dllBytes);
-        _processContext = new ProcessContext(process);
-    }
-
-    /// <summary>
-    /// Initialises an instances of the <see cref="LibraryMapper"/> class with the functionality to map a DLL from disk into a process
-    /// </summary>
-    public LibraryMapper(Process process, string dllFilePath, MappingFlags mappingFlags = MappingFlags.None)
-    {
-        if (process.HasExited)
-        {
-            throw new ArgumentException("The provided process is not currently running");
-        }
-
-        if (!File.Exists(dllFilePath))
-        {
-            throw new ArgumentException("The provided file path did not point to a valid file");
-        }
-
-        if (!Environment.Is64BitProcess && process.GetArchitecture() == Architecture.X64)
-        {
-            throw new NotSupportedException("The provided process cannot be mapped into from an x86 build");
-        }
-
-        var dllBytes = File.ReadAllBytes(dllFilePath);
-
-        _dllBytes = dllBytes.ToArray();
-        _fileResolver = new FileResolver(process, Path.GetDirectoryName(dllFilePath));
         _mappingFlags = mappingFlags;
         _peImage = new PeImage(dllBytes);
         _processContext = new ProcessContext(process);
@@ -277,7 +248,7 @@ public sealed class LibraryMapper
 
         bool ret = _processContext.CallRoutine<bool>(entryPointAddress, CallingConvention.StdCall, DllBaseAddress, reason, 0);
         if (!ret) {
-            throw new ApplicationException($"Failed to call the DLL entry point with {reason:G}");
+            throw new ApplicationException($"Couldn't call the entry-point with reason {reason:G}.");
         }
     }
 
@@ -291,7 +262,7 @@ public sealed class LibraryMapper
 
             if (!_processContext.CallRoutine<bool>(_processContext.GetFunctionAddress("kernel32.dll", "FreeLibrary"), CallingConvention.StdCall, dependencyAddress))
             {
-                throw new ApplicationException($"Failed to free the dependency {dependencyName} from the process");
+                throw new ApplicationException($"Couldn't free dependency '{dependencyName}'.");
             }
         }
 
@@ -563,7 +534,7 @@ public sealed class LibraryMapper
 
             if (dependencyFilePath is null)
             {
-                throw new FileNotFoundException($"Failed to resolve the dependency file path for {dependencyName}");
+                throw new FileNotFoundException($"Could not resolve dependency file path for '{dependencyName}'.");
             }
 
             var dependencyFilePathAddress = _processContext.Process.AllocateBuffer(Encoding.Unicode.GetByteCount(dependencyFilePath), ProtectionType.ReadOnly);
@@ -578,7 +549,7 @@ public sealed class LibraryMapper
 
                 if (dependencyAddress == 0)
                 {
-                    throw new ApplicationException($"Failed to load the dependency {dependencyName} into the process");
+                    throw new ApplicationException($"Couldn't load the dependency '{dependencyName}' into the module.");
                 }
 
                 _processContext.RecordModuleLoad(dependencyAddress, dependencyFilePath);

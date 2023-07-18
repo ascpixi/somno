@@ -165,7 +165,7 @@ internal sealed class ProcessContext
 
         if (function is null)
         {
-            throw new ApplicationException($"Failed to find the function {functionName} in the module {moduleName.ToLower()}");
+            throw new ApplicationException($"Couldn't find function '{functionName}' in module '{moduleName.ToLowerInvariant()}'.");
         }
 
         return function.ForwarderString is null ? moduleAddress + function.RelativeAddress : ResolveForwardedFunction(function.ForwarderString, null);
@@ -178,7 +178,7 @@ internal sealed class ProcessContext
 
         if (function is null)
         {
-            throw new ApplicationException($"Failed to find the function #{functionOrdinal} in the module {moduleName.ToLower()}");
+            throw new ApplicationException($"Couldn't find function #{functionOrdinal} in module '{moduleName.ToLowerInvariant()}'");
         }
 
         return function.ForwarderString is null ? moduleAddress + function.RelativeAddress : ResolveForwardedFunction(function.ForwarderString, null);
@@ -308,7 +308,7 @@ internal sealed class ProcessContext
             return _moduleCache[moduleName];
         }
 
-        throw new ApplicationException($"Failed to find the module {moduleName.ToLower()} in the process");
+        throw new ApplicationException($"Couldn't find module '{moduleName.ToLower()}' in the process.");
     }
 
     private nint ResolveForwardedFunction(string forwarderString, string? parentName)
@@ -334,7 +334,7 @@ internal sealed class ProcessContext
 
             if (forwardedFunction is null)
             {
-                throw new ApplicationException($"Failed to find the function {forwardedData[1]} in the module {forwardedData[0].ToLower()}.dll");
+                throw new ApplicationException($"Couldn't find the function '{forwardedData[1]}' in the module '{forwardedData[0].ToLower()}.dll'.");
             }
 
             if (forwardedFunction.ForwarderString is null)

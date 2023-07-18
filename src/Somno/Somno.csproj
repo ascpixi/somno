@@ -5,6 +5,8 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Description>Somno Game Replay Recorder</Description>
+		<Company>Ithacan Media</Company>
+		<ProductName></ProductName>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <PlatformTarget>x64</PlatformTarget>
         <ProduceReferenceAssembly>False</ProduceReferenceAssembly>

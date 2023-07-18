@@ -25,12 +25,13 @@
   <ItemGroup>
     <ClInclude Include="src\logging.hpp" />
     <ClInclude Include="src\ipc.hpp" />
-    <ClInclude Include="src\memio.h" />
+    <ClInclude Include="src\directcall.h" />
     <ClInclude Include="src\strcrypt.h" />
+    <ClInclude Include="src\threading.hpp" />
     <ClInclude Include="src\winwrapper.h" />
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\memio.asm" />
+    <MASM Include="src\directcall.asm" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

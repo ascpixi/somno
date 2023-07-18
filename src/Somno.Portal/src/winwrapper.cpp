@@ -5,11 +5,11 @@
 #include "winwrapper.h"
 #include "logging.hpp"
 
-HMODULE ww_kernel32;
 CreateFileMappingAProc ww_fptrCreateFileMappingA;
 MapViewOfFileProc      ww_fptrMapViewOfFile;
 UnmapViewOfFileProc    ww_fptrUnmapViewOfFile;
 FlushViewOfFileProc    ww_fptrFlushViewOfFile;
+NtCreateThreadExProc   ww_fptrNtCreateThreadEx;
 
 typedef VOID(NTAPI* pRtlInitUnicodeString)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
 typedef NTSTATUS(NTAPI* pLdrLoadDll) (
@@ -91,6 +91,7 @@ HMODULE WwGetModuleHandleW(LPCWSTR lModuleName) {
 }
 
 // A manual implementation of LoadLibraryW.
+#pragma optimize ( "gst", off ) // disable all optimizations, but do omit stack pointers
 HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     UNICODE_STRING ustrModule;
     HANDLE hModule = NULL;
@@ -125,19 +126,24 @@ HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     NTSTATUS status = myLdrLoadDll(NULL, 0, &ustrModule, &hModule);
     return (HMODULE)hModule;
 }
+#pragma optimize ( "", on )
 
+#pragma optimize ( "gst", off ) // disable all optimizations, but do omit stack pointers
 bool initialize_winwrapper() {
-    if (ww_kernel32 == NULL) {
-        ww_kernel32 = WwLoadLibraryW(str_encrypted_w(L"kernel32.dll"));
+    HMODULE kernel32 = WwGetModuleHandleW(str_encrypted_w(L"kernel32.dll"));
+    if (kernel32 == NULL) {
+        LOG_ERROR("Could not get the handle to kernel32.");
+        return false;
+    }
 
-        if (ww_kernel32 == NULL) {
-            LOG_ERROR("Could not load kernel32.dll when loading dynamically linked functions.");
-            return false;
-        }
+    HMODULE ntdll = WwGetModuleHandleW(str_encrypted_w(L"ntdll.dll"));
+    if (ntdll == NULL) {
+        LOG_ERROR("Could not get the handle to ntdll.");
+        return false;
     }
 
     ww_fptrCreateFileMappingA = (CreateFileMappingAProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("CreateFileMappingA")
+        kernel32, str_encrypted("CreateFileMappingA")
     );
 
     if (ww_fptrCreateFileMappingA == NULL) {
@@ -146,7 +152,7 @@ bool initialize_winwrapper() {
     }
 
     ww_fptrMapViewOfFile = (MapViewOfFileProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("MapViewOfFile")
+        kernel32, str_encrypted("MapViewOfFile")
     );
 
     if (ww_fptrMapViewOfFile == NULL) {
@@ -155,7 +161,7 @@ bool initialize_winwrapper() {
     }
 
     ww_fptrFlushViewOfFile = (FlushViewOfFileProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("FlushViewOfFile")
+        kernel32, str_encrypted("FlushViewOfFile")
     );
 
     if (ww_fptrFlushViewOfFile == NULL) {
@@ -164,7 +170,7 @@ bool initialize_winwrapper() {
     }
 
     ww_fptrUnmapViewOfFile = (UnmapViewOfFileProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("UnmapViewOfFile")
+        kernel32, str_encrypted("UnmapViewOfFile")
     );
 
     if (ww_fptrUnmapViewOfFile == NULL) {
@@ -172,7 +178,16 @@ bool initialize_winwrapper() {
         return false;
     }
 
+    ww_fptrNtCreateThreadEx = (NtCreateThreadExProc)WwGetProcAddress(
+        ntdll, str_encrypted("NtCreateThreadEx")
+    );
+
+    if (ww_fptrNtCreateThreadEx == NULL) {
+        LOG_ERROR("Could not load NtCreateThreadEx from ntdll.dll.");
+        return false;
+    }
+
     LOG_INFO("All dynamically loaded functions were successfully initialized.");
     return true;
 }
-
+#pragma optimize ( "", on )

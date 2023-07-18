@@ -17,7 +17,12 @@ SomnoReadVirtualMemory PROC
 
 	; System call start
 	mov r10, rcx
-	mov eax, 3Fh
+
+	; Move 0x3F to EAX
+	mov eax, 26h
+	add eax, 24
+	or  eax, 1
+
 	sub r8, 2				; Obfuscation
 	syscall
 	ret

@@ -13,6 +13,7 @@
 
 // Represents the IPC request ID for a single IPC request.
 enum ipc_request_id : uint8_t {
+    ipcid_Null              = 0x00,
     ipcid_Handshake         = 0xAA,
     ipcid_ReadProcessMemory = 0xB1,
     ipcid_Terminate         = 0xBF
@@ -59,6 +60,7 @@ uint32_t ipc_payload_read32(ipc_region* map) {
 }
 
 // Opens a connection to the shared IPC memory region.
+#pragma optimize ( "gst", off ) // disable all optimizations, but do omit stack pointers
 ipc_region* open_ipc_memory() {
     HANDLE handle = WwCreateFileMappingA(
         INVALID_HANDLE_VALUE,
@@ -121,6 +123,7 @@ ipc_region* open_ipc_memory() {
     *(uint64_t*)ipc->payload = IPC_HANDSHAKE_RET;
     return ipc;
 }
+#pragma optimize ( "", on )
 
 // Closes a previously opened pointer to shared IPC memory.
 void close_ipc_memory(ipc_region* map) {

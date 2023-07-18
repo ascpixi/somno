@@ -14,7 +14,7 @@
 		OutputDebugStringA(cad); \
 	}
 #else
-	#define LOG_ERROR(content) ;
+	#define LOG_ERROR(...) ;
 #endif
 
 #if REPORT_INFO
@@ -24,5 +24,5 @@
 		OutputDebugStringA(cad); \
 	}
 #else
-	#define LOG_INFO(content) ;
+	#define LOG_INFO(...) ;
 #endif

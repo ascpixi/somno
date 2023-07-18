@@ -19,7 +19,12 @@
     <ClInclude Include="src\winwrapper.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\memio.h" />
+    <ClInclude Include="src\directcall.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\threading.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\portal.cpp">
@@ -30,7 +35,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\memio.asm">
+    <MASM Include="src\directcall.asm">
       <Filter>src</Filter>
     </MASM>
   </ItemGroup>

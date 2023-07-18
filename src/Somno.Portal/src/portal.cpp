@@ -7,9 +7,10 @@
 #include <Windows.h>
 
 #include "winwrapper.h"
+#include "directcall.h"
+#include "threading.hpp"
 #include "logging.hpp"
 #include "strcrypt.h"
-#include "memio.h"
 #include "ipc.hpp"
 
 enum portal_state : uint8_t {
@@ -20,8 +21,11 @@ enum portal_state : uint8_t {
 
 static portal_state run_state = portal_state::NotInitialized;
 
-DWORD WINAPI main_thread(void* lpParam) {
-    LOG_INFO("Main thread procedure started.");
+DWORD WINAPI init_thread(void* lpParam);
+DWORD WINAPI main_thread(void* lpParam);
+
+DWORD WINAPI init_thread(void* lpParam) {
+    LOG_INFO("Initialization thread procedure started.");
 
     // Initialize Ww... functions (dynamically loaded)
     if (!initialize_winwrapper()) {
@@ -36,6 +40,24 @@ DWORD WINAPI main_thread(void* lpParam) {
         run_state = portal_state::Terminated;
         return 0;
     }
+
+    bool success = somno_create_thread(main_thread, ipc);
+    if (!success) {
+        LOG_ERROR("Could not create main thread.");
+    }
+
+    return 0;
+}
+
+DWORD WINAPI main_thread(void* lpParam) {
+    LOG_INFO("Main thread procedure started.");
+
+    if (lpParam == NULL) {
+        LOG_ERROR("The thread received a null pointer as the IPC memory region.");
+        return 0;
+    }
+
+    ipc_region_t* ipc = (ipc_region_t*)lpParam;
 
     while (run_state == portal_state::Running) {
         while (!ipc->ctrl_pending_request && run_state == portal_state::Running) {
@@ -64,7 +86,8 @@ DWORD WINAPI main_thread(void* lpParam) {
                 auto amount = ipc_payload_read32(ipc, &ipc_read_counter);
 
                 SomnoReadVirtualMemory(handle, target, ipc->payload, amount, NULL);
-                ipc->ctrl_pending_request = 0;
+                ipc->request_id = ipcid_Null;
+                ipc->ctrl_pending_request = FALSE;
                 break;
             }
 
@@ -78,7 +101,7 @@ DWORD WINAPI main_thread(void* lpParam) {
 
     portal_end:
 
-    ipc->ctrl_pending_request = 0;
+    ipc->ctrl_pending_request = FALSE;
     close_ipc_memory(ipc);
 
     LOG_INFO("Closing main thread!");
@@ -102,15 +125,13 @@ BOOL APIENTRY DllMain(
         case DLL_PROCESS_ATTACH: {
             if (run_state == portal_state::NotInitialized) {
                 run_state = portal_state::Running;
-                auto handle = CreateThread(NULL, 0, main_thread, NULL, 0, NULL);
-
-                if (handle == NULL) {
-                    LOG_ERROR("Could not create main thread.");
+                bool success = somno_create_thread(init_thread, NULL);
+                if (!success) {
+                    LOG_ERROR("Could not create the initialization thread.");
                     return FALSE;
                 }
 
                 LOG_INFO("Thread created - exiting from DllMain.");
-                CloseHandle(handle); // does NOT terminate the thread
             }
 
             break;

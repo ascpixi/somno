@@ -11,8 +11,13 @@ CreateFileMappingAProc ww_fptrCreateFileMappingA;
 MapViewOfFileProc      ww_fptrMapViewOfFile;
 UnmapViewOfFileProc    ww_fptrUnmapViewOfFile;
 FlushViewOfFileProc    ww_fptrFlushViewOfFile;
+VirtualProtectProc     ww_fptrVirtualProtect;
+VirtualQueryExProc     ww_fptrVirtualQueryEx;
+GetThreadContextProc   ww_fptrGetThreadContext;
+SetThreadContextProc   ww_fptrSetThreadContext;
+ResumeThreadProc       ww_fptrResumeThread;
+GetSystemInfoProc      ww_fptrGetSystemInfo;
 NtCreateThreadExProc   ww_fptrNtCreateThreadEx;
-NtDelayExecutionProc   ww_fptrNtDelayExecution;
 
 typedef VOID(NTAPI* pRtlInitUnicodeString)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
 typedef NTSTATUS(NTAPI* pLdrLoadDll) (
@@ -93,6 +98,8 @@ HMODULE WwGetModuleHandleW(LPCWSTR lModuleName) {
     return NULL;
 }
 
+#pragma optimize ("t", off)
+
 // A manual implementation of LoadLibraryW.
 HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     UNICODE_STRING ustrModule;
@@ -129,6 +136,13 @@ HMODULE WwLoadLibraryW(LPCWSTR lpFileName) {
     return (HMODULE)hModule;
 }
 
+#define __ww_initproc(fptr, fptrType, libptr, name, libname)        \
+    fptr = (fptrType)WwGetProcAddress(libptr, str_encrypted(name)); \
+    if(fptr == NULL) {                                              \
+        LOG_ERROR("Could not load " name " from " libname ".");     \
+        return false;                                               \
+    }
+
 bool initialize_winwrapper() {
     if (ww_kernel32 == NULL) {
         ww_kernel32 = WwLoadLibraryW(str_encrypted_w(L"kernel32.dll"));
@@ -148,56 +162,65 @@ bool initialize_winwrapper() {
         }
     }
 
-    ww_fptrCreateFileMappingA = (CreateFileMappingAProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("CreateFileMappingA")
+    // kernel32.dll functions
+    __ww_initproc(
+        ww_fptrCreateFileMappingA, CreateFileMappingAProc,
+        ww_kernel32, "CreateFileMappingA", "kernel32.dll"
     );
 
-    if (ww_fptrCreateFileMappingA == NULL) {
-        LOG_ERROR("Could not load CreateFileMappingA from kernel32.dll.");
-        return false;
-    }
-
-    ww_fptrMapViewOfFile = (MapViewOfFileProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("MapViewOfFile")
+    __ww_initproc(
+        ww_fptrMapViewOfFile, MapViewOfFileProc,
+        ww_kernel32, "MapViewOfFile", "kernel32.dll"
     );
 
-    if (ww_fptrMapViewOfFile == NULL) {
-        LOG_ERROR("Could not load MapViewOfFile from kernel32.dll.");
-        return false;
-    }
-
-    ww_fptrFlushViewOfFile = (FlushViewOfFileProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("FlushViewOfFile")
+    __ww_initproc(
+        ww_fptrFlushViewOfFile, FlushViewOfFileProc,
+        ww_kernel32, "FlushViewOfFile", "kernel32.dll"
     );
 
-    if (ww_fptrFlushViewOfFile == NULL) {
-        LOG_ERROR("Could not load FlushViewOfFile from kernel32.dll.");
-        return false;
-    }
-
-    ww_fptrUnmapViewOfFile = (UnmapViewOfFileProc)WwGetProcAddress(
-        ww_kernel32, str_encrypted("UnmapViewOfFile")
+    __ww_initproc(
+        ww_fptrUnmapViewOfFile, UnmapViewOfFileProc,
+        ww_kernel32, "UnmapViewOfFile", "kernel32.dll"
     );
 
-    if (ww_fptrUnmapViewOfFile == NULL) {
-        LOG_ERROR("Could not load UnmapViewOfFile from kernel32.dll.");
-        return false;
-    }
-
-    ww_fptrNtCreateThreadEx = (NtCreateThreadExProc)WwGetProcAddress(
-        ww_ntdll, str_encrypted("NtCreateThreadEx")
+    __ww_initproc(
+        ww_fptrVirtualProtect, VirtualProtectProc,
+        ww_kernel32, "VirtualProtect", "kernel32.dll"
     );
 
-    if (ww_fptrNtCreateThreadEx == NULL) {
-        LOG_ERROR("Could not load NtCreateThreadEx from ntdll.dll.");
-        return false;
-    }
+    __ww_initproc(
+        ww_fptrVirtualQueryEx, VirtualQueryExProc,
+        ww_kernel32, "VirtualQueryEx", "kernel32.dll"
+    );
 
-    ww_fptrNtDelayExecution = (NtDelayExecutionProc)WwGetProcAddress(
-        ww_ntdll, str_encrypted("NtDelayExecution")
+    __ww_initproc(
+        ww_fptrGetThreadContext, GetThreadContextProc,
+        ww_kernel32, "GetThreadContext", "kernel32.dll"
+    );
+
+    __ww_initproc(
+        ww_fptrSetThreadContext, SetThreadContextProc,
+        ww_kernel32, "SetThreadContext", "kernel32.dll"
+    );
+
+    __ww_initproc(
+        ww_fptrResumeThread, ResumeThreadProc,
+        ww_kernel32, "ResumeThread", "kernel32.dll"
+    );
+
+    __ww_initproc(
+        ww_fptrGetSystemInfo, GetSystemInfoProc,
+        ww_kernel32, "GetSystemInfo", "kernel32.dll"
+    );
+
+    // ntdll.dll functions
+    __ww_initproc(
+        ww_fptrNtCreateThreadEx, NtCreateThreadExProc,
+        ww_ntdll, "NtCreateThreadEx", "ntdll.dll"
     );
 
     LOG_INFO("All dynamically loaded functions were successfully initialized.");
     return true;
 }
 
+#pragma optimize ("t", on)

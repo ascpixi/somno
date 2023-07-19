@@ -3,8 +3,9 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <Windows.h>
+#include "winwrapper.h"
 
-extern "C" __declspec(dllexport) void* ss_syscall_trampoline = 0;
+extern "C" void* ss_syscall_trampoline = 0;
 
 // Calls into the NtDelayExecution, while hiding the true caller of the syscall.
 extern "C" NTSTATUS ss_nt_delayexecution(
@@ -51,14 +52,14 @@ typedef struct ss_region_desc {
 } ss_region_desc_t;
 
 __declspec(noinline) ss_region_desc_t ss_search_for_zeroregion(void* omit) {
-    HANDLE self = GetCurrentProcess();
+    HANDLE self = (HANDLE)-1; // current process
     MEMORY_BASIC_INFORMATION mbi;
     SYSTEM_INFO si;
-    GetSystemInfo(&si);
+    WwGetSystemInfo(&si);
 
     void* lpMem = 0;
     while (lpMem < si.lpMaximumApplicationAddress) {
-        auto returned = VirtualQueryEx(self, lpMem, &mbi, sizeof(mbi));
+        auto returned = WwVirtualQueryEx(self, lpMem, &mbi, sizeof(mbi));
         if (returned == 0) {
             LOG_ERROR("A call to VirtualQueryEx with parameter %" PRIx64 " failed.", (uint64_t)returned);
             return { nullptr, nullptr, 0 };
@@ -107,7 +108,7 @@ bool ss_sleep_init(void* omit) {
 
     // Temporarily change the protection flags of the pages in the region, so
     // that we can write to an otherwise execute-only region
-    bool protectSuccess = VirtualProtect(
+    bool protectSuccess = WwVirtualProtect(
         region.regionStart, region.regionSize,
         PAGE_EXECUTE_READWRITE,
         &oldProtect
@@ -127,7 +128,7 @@ bool ss_sleep_init(void* omit) {
     ss_syscall_trampoline = region.addr;
 
     // Restore the previous protection flags.
-    protectSuccess = VirtualProtect(
+    protectSuccess = WwVirtualProtect(
         region.regionStart, region.regionSize,
         oldProtect, &oldProtect
     );

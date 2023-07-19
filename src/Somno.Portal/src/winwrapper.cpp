@@ -5,11 +5,14 @@
 #include "winwrapper.h"
 #include "logging.hpp"
 
+HMODULE ww_ntdll;
 HMODULE ww_kernel32;
 CreateFileMappingAProc ww_fptrCreateFileMappingA;
 MapViewOfFileProc      ww_fptrMapViewOfFile;
 UnmapViewOfFileProc    ww_fptrUnmapViewOfFile;
 FlushViewOfFileProc    ww_fptrFlushViewOfFile;
+NtCreateThreadExProc   ww_fptrNtCreateThreadEx;
+NtDelayExecutionProc   ww_fptrNtDelayExecution;
 
 typedef VOID(NTAPI* pRtlInitUnicodeString)(PUNICODE_STRING DestinationString, PCWSTR SourceString);
 typedef NTSTATUS(NTAPI* pLdrLoadDll) (
@@ -136,6 +139,15 @@ bool initialize_winwrapper() {
         }
     }
 
+    if (ww_ntdll == NULL) {
+        ww_ntdll = WwLoadLibraryW(str_encrypted_w(L"ntdll.dll"));
+
+        if (ww_ntdll == NULL) {
+            LOG_ERROR("Could not load ntdll.dll when loading dynamically linked functions.");
+            return false;
+        }
+    }
+
     ww_fptrCreateFileMappingA = (CreateFileMappingAProc)WwGetProcAddress(
         ww_kernel32, str_encrypted("CreateFileMappingA")
     );
@@ -171,6 +183,19 @@ bool initialize_winwrapper() {
         LOG_ERROR("Could not load UnmapViewOfFile from kernel32.dll.");
         return false;
     }
+
+    ww_fptrNtCreateThreadEx = (NtCreateThreadExProc)WwGetProcAddress(
+        ww_ntdll, str_encrypted("NtCreateThreadEx")
+    );
+
+    if (ww_fptrNtCreateThreadEx == NULL) {
+        LOG_ERROR("Could not load NtCreateThreadEx from ntdll.dll.");
+        return false;
+    }
+
+    ww_fptrNtDelayExecution = (NtDelayExecutionProc)WwGetProcAddress(
+        ww_ntdll, str_encrypted("NtDelayExecution")
+    );
 
     LOG_INFO("All dynamically loaded functions were successfully initialized.");
     return true;

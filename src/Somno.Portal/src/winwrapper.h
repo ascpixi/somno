@@ -27,6 +27,28 @@ typedef BOOL(WINAPI* FlushViewOfFileProc)(
     SIZE_T dwNumberOfBytesToFlush
 );
 
+typedef BOOL(WINAPI* VirtualProtectProc)(
+    LPVOID lpAddress,
+    SIZE_T dwSize,
+    DWORD flNewProtect,
+    PDWORD lpflOldProtect
+);
+
+typedef SIZE_T(WINAPI* VirtualQueryExProc)(
+    HANDLE hProcess,
+    LPCVOID lpAddress,
+    PMEMORY_BASIC_INFORMATION lpBuffer,
+    SIZE_T dwLength
+);
+
+typedef BOOL(WINAPI* GetThreadContextProc)(HANDLE hThread, LPCONTEXT lpContext);
+
+typedef BOOL(WINAPI* SetThreadContextProc)(HANDLE hThread, const CONTEXT *lpContext);
+
+typedef DWORD(WINAPI* ResumeThreadProc)(HANDLE hThread);
+
+typedef void(WINAPI* GetSystemInfoProc)(LPSYSTEM_INFO lpSystemInfo);
+
 typedef NTSTATUS(NTAPI* NtCreateThreadExProc) (
     OUT PHANDLE hThread,
     IN ACCESS_MASK DesiredAccess,
@@ -41,11 +63,6 @@ typedef NTSTATUS(NTAPI* NtCreateThreadExProc) (
     OUT PVOID lpBytesBuffer
 );
 
-typedef DWORD(WINAPI* NtDelayExecutionProc)(
-    BOOL Alertable,
-    PLARGE_INTEGER DelayInterval
-);
-
 // We are forced to have the definition and implementation of inline methods
 // in one translation unit, so we declare the variables we declared in winwrapper.cpp
 // as extern here.
@@ -55,8 +72,13 @@ extern CreateFileMappingAProc ww_fptrCreateFileMappingA;
 extern MapViewOfFileProc      ww_fptrMapViewOfFile;
 extern UnmapViewOfFileProc    ww_fptrUnmapViewOfFile;
 extern FlushViewOfFileProc    ww_fptrFlushViewOfFile;
+extern VirtualProtectProc     ww_fptrVirtualProtect;
+extern VirtualQueryExProc     ww_fptrVirtualQueryEx;
+extern GetThreadContextProc   ww_fptrGetThreadContext;
+extern SetThreadContextProc   ww_fptrSetThreadContext;
+extern ResumeThreadProc       ww_fptrResumeThread;
+extern GetSystemInfoProc      ww_fptrGetSystemInfo;
 extern NtCreateThreadExProc   ww_fptrNtCreateThreadEx;
-extern NtDelayExecutionProc   ww_fptrNtDelayExecution;
 
 // Initializes the direct-load wrapper functions.
 // Returns a value that determines whether the operation has failed.
@@ -106,16 +128,47 @@ __forceinline BOOL WwFlushViewOfFile(
     LPCVOID lpBaseAddress,
     SIZE_T  dwNumberOfBytesToFlush
 ) {
-    return ww_fptrFlushViewOfFile(
-        lpBaseAddress,
-        dwNumberOfBytesToFlush
-    );
+    return ww_fptrFlushViewOfFile(lpBaseAddress, dwNumberOfBytesToFlush);
 }
 
 // Unmaps a mapped view of a file from the calling process's address space.
 // This is a wrapped function, which does uses directly imported functions.
 __forceinline BOOL WwUnmapViewOfFile(LPCVOID lpBaseAddress) {
     return ww_fptrUnmapViewOfFile(lpBaseAddress);
+}
+
+__forceinline BOOL WwVirtualProtect(
+    LPVOID lpAddress,
+    SIZE_T dwSize,
+    DWORD flNewProtect,
+    PDWORD lpflOldProtect
+) {
+    return ww_fptrVirtualProtect(lpAddress, dwSize, flNewProtect, lpflOldProtect);
+}
+
+__forceinline SIZE_T WwVirtualQueryEx(
+    HANDLE hProcess,
+    LPCVOID lpAddress,
+    PMEMORY_BASIC_INFORMATION lpBuffer,
+    SIZE_T dwLength
+) {
+    return ww_fptrVirtualQueryEx(hProcess, lpAddress, lpBuffer, dwLength);
+}
+
+__forceinline BOOL WwGetThreadContext(HANDLE hThread, LPCONTEXT lpContext) {
+    return ww_fptrGetThreadContext(hThread, lpContext);
+}
+
+__forceinline BOOL WwSetThreadContext(HANDLE hThread, const CONTEXT* lpContext) {
+    return ww_fptrSetThreadContext(hThread, lpContext);
+}
+
+__forceinline DWORD WwResumeThread(HANDLE hThread) {
+    return ww_fptrResumeThread(hThread);
+}
+
+__forceinline void WwGetSystemInfo(LPSYSTEM_INFO lpSystemInfo) {
+    return ww_fptrGetSystemInfo(lpSystemInfo);
 }
 
 // This is a wrapped function, which does uses directly imported functions.

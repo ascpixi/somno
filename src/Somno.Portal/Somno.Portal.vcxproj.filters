@@ -19,7 +19,15 @@
     <ClInclude Include="src\winwrapper.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\memio.h" />
+    <ClInclude Include="src\memio.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\threading.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stealthsleep.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\portal.cpp">
@@ -31,6 +39,9 @@
   </ItemGroup>
   <ItemGroup>
     <MASM Include="src\memio.asm">
+      <Filter>src</Filter>
+    </MASM>
+    <MASM Include="src\stealthsleep.asm">
       <Filter>src</Filter>
     </MASM>
   </ItemGroup>

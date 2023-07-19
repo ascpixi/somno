@@ -8,7 +8,9 @@
 
 #include "winwrapper.h"
 #include "logging.hpp"
+#include "threading.hpp"
 #include "strcrypt.h"
+#include "stealthsleep.h"
 #include "memio.h"
 #include "ipc.hpp"
 
@@ -18,10 +20,14 @@ enum portal_state : uint8_t {
     Terminated
 };
 
+static HMODULE dll_base;
 static portal_state run_state = portal_state::NotInitialized;
 
-DWORD WINAPI main_thread(void* lpParam) {
-    LOG_INFO("Main thread procedure started.");
+DWORD WINAPI init_thread(void* lpParam);
+DWORD WINAPI main_thread(void* lpParam);
+
+DWORD WINAPI init_thread(void* lpParam) {
+    LOG_INFO("Initialization thread procedure started.");
 
     // Initialize Ww... functions (dynamically loaded)
     if (!initialize_winwrapper()) {
@@ -29,21 +35,38 @@ DWORD WINAPI main_thread(void* lpParam) {
         return 0;
     }
 
-    ipc_region_t* ipc = open_ipc_memory();
+    if (!ss_sleep_init(dll_base)) {
+        LOG_ERROR("Couldn't initialize deferred execution functionality.");
+        run_state = portal_state::Terminated;
+        return 0;
+    }
 
+    dll_base = nullptr;
+
+    ipc_region_t* ipc = open_ipc_memory();
     if (ipc == nullptr) {
         LOG_ERROR("Couldn't open IPC.");
         run_state = portal_state::Terminated;
         return 0;
     }
 
+    bool success = somno_create_thread(main_thread, ipc);
+    if (!success) {
+        LOG_ERROR("Could not create the main thread.");
+        run_state = portal_state::Terminated;
+    }
+
+    return 0;
+}
+
+DWORD WINAPI main_thread(void* lpParam) {
+    LOG_INFO("Main thread procedure started.");
+    ipc_region_t* ipc = (ipc_region_t*)lpParam;
+
     while (run_state == portal_state::Running) {
         while (!ipc->ctrl_pending_request && run_state == portal_state::Running) {
-            // Signal to the CPU that this we're spinning (although this is non-busy spinning)
             _mm_pause();
-
-            // "If you specify 0 milliseconds, the thread will relinquish the remainder of its time slice but remain ready"
-            SleepEx(0, false);
+            ss_sleep(2, true);
         }
 
         if (run_state != portal_state::Running) {
@@ -70,19 +93,28 @@ DWORD WINAPI main_thread(void* lpParam) {
 
             case ipcid_Terminate: {
                 LOG_INFO("Received a termination IPC message.");
-                run_state = portal_state::Terminated;
                 goto portal_end;
+            }
+
+            default: {
+                LOG_ERROR(
+                    "Unknown IPC request. (P: %" PRIu8 ", ID: 0x%" PRIx8 ", d64: %" PRIx64 ")",
+                    ipc->ctrl_pending_request,
+                    ipc->request_id,
+                    *(uint64_t*)ipc->payload
+                );
+                break;
             }
         }
     }
 
     portal_end:
+        run_state = portal_state::Terminated;
+        ipc->ctrl_pending_request = 0;
+        close_ipc_memory(ipc);
 
-    ipc->ctrl_pending_request = 0;
-    close_ipc_memory(ipc);
-
-    LOG_INFO("Closing main thread!");
-    return 0;
+        LOG_INFO("Closing main thread!");
+        return 0;
 }
 
 BOOL APIENTRY DllMain(
@@ -102,10 +134,12 @@ BOOL APIENTRY DllMain(
         case DLL_PROCESS_ATTACH: {
             if (run_state == portal_state::NotInitialized) {
                 run_state = portal_state::Running;
-                auto handle = CreateThread(NULL, 0, main_thread, NULL, 0, NULL);
+                dll_base = hModule;
+
+                auto handle = CreateThread(NULL, 0, init_thread, NULL, 0, NULL);
 
                 if (handle == NULL) {
-                    LOG_ERROR("Could not create main thread.");
+                    LOG_ERROR("Could not create the initialization thread.");
                     return FALSE;
                 }
 

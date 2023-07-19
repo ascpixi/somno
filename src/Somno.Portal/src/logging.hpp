@@ -4,8 +4,8 @@
 #include <Windows.h>
 #include "strcrypt.h"
 
-#define REPORT_INFO	  true
-#define REPORT_ERRORS true
+#define REPORT_INFO	  false
+#define REPORT_ERRORS false
 
 #if REPORT_ERRORS
 	#define LOG_ERROR(...) { \
@@ -14,7 +14,7 @@
 		OutputDebugStringA(cad); \
 	}
 #else
-	#define LOG_ERROR(content) ;
+	#define LOG_ERROR(...) ;
 #endif
 
 #if REPORT_INFO
@@ -24,5 +24,5 @@
 		OutputDebugStringA(cad); \
 	}
 #else
-	#define LOG_INFO(content) ;
+	#define LOG_INFO(...) ;
 #endif

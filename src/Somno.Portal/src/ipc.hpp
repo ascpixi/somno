@@ -58,6 +58,8 @@ uint32_t ipc_payload_read32(ipc_region_t* map) {
     return value;
 }
 
+#pragma optimize ("gst", off)
+
 // Opens a connection to the shared IPC memory region.
 ipc_region_t* open_ipc_memory() {
     HANDLE handle = WwCreateFileMappingA(
@@ -121,6 +123,8 @@ ipc_region_t* open_ipc_memory() {
     ipc->ctrl_pending_request = 0;
     return ipc;
 }
+
+#pragma optimize ("gst", on)
 
 // Closes a previously opened pointer to shared IPC memory.
 void close_ipc_memory(ipc_region_t* map) {

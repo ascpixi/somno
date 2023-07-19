@@ -36,30 +36,30 @@ typedef struct ipc_region {
 
 __pragma(pack(pop))
 
-uint64_t ipc_payload_read64(ipc_region* map, uint32_t* counter) {
+uint64_t ipc_payload_read64(ipc_region_t* map, uint32_t* counter) {
     auto value = *(uint64_t*)(map->payload + *counter);
     *counter += sizeof(uint64_t);
     return value;
 }
 
-uint64_t ipc_payload_read64(ipc_region* map) {
+uint64_t ipc_payload_read64(ipc_region_t* map) {
     auto value = *(uint64_t*)(map->payload);
     return value;
 }
 
-uint32_t ipc_payload_read32(ipc_region* map, uint32_t* counter) {
+uint32_t ipc_payload_read32(ipc_region_t* map, uint32_t* counter) {
     auto value = *(uint32_t*)(map->payload + *counter);
     *counter += sizeof(uint32_t);
     return value;
 }
 
-uint32_t ipc_payload_read32(ipc_region* map) {
+uint32_t ipc_payload_read32(ipc_region_t* map) {
     auto value = *(uint32_t*)(map->payload);
     return value;
 }
 
 // Opens a connection to the shared IPC memory region.
-ipc_region* open_ipc_memory() {
+ipc_region_t* open_ipc_memory() {
     HANDLE handle = WwCreateFileMappingA(
         INVALID_HANDLE_VALUE,
         NULL,
@@ -81,7 +81,7 @@ ipc_region* open_ipc_memory() {
         return nullptr;
     }
 
-    auto ipc = (ipc_region*)map;
+    auto ipc = (ipc_region_t*)map;
     if (!ipc->ctrl_pending_request) {
         LOG_ERROR(
             "Expected a pending request from the controller. (P: %" PRIu8 ", ID: %" PRIu8 ", D: %" PRIx64 ")",
@@ -117,14 +117,14 @@ ipc_region* open_ipc_memory() {
 
     // Handshake succeded!
     LOG_INFO("IPC handshake succeeded.");
+    *(uint64_t*)(ipc->payload) = IPC_HANDSHAKE_RET;
     ipc->ctrl_pending_request = 0;
-    *(uint64_t*)ipc->payload = IPC_HANDSHAKE_RET;
     return ipc;
 }
 
 // Closes a previously opened pointer to shared IPC memory.
-void close_ipc_memory(ipc_region* map) {
-    WwFlushViewOfFile(map, sizeof(ipc_region));
+void close_ipc_memory(ipc_region_t* map) {
+    WwFlushViewOfFile(map, IPC_MEMORY_SIZE);
     WwUnmapViewOfFile(map);
     LOG_INFO("The IPC memory region has been closed.");
 }

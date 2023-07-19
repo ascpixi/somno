@@ -173,7 +173,6 @@ namespace Somno.IPC
                     Thread.Sleep(0);
                 }
 
-                Terminal.LogInfo("The portal agent has acknowledged the termination request.");
                 ipc = null;
             }
 

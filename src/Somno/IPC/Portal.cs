@@ -17,6 +17,7 @@ namespace Somno.IPC
         MemoryProcessHandle procHandle;
         LibraryMapper? mapper;
         PortalIPCRegion* ipc;
+        Process vectorProcess;
 
         const string IPCFileMapName = @"Global\AqW5p2FhqX";
         const ulong IPCHandshakeSignature = 0x488D0411EBFE90C3;
@@ -51,7 +52,6 @@ namespace Somno.IPC
         public Portal(string target)
         {
             Process targetProcess = AwaitProcess(target);
-            Process vectorProcess;
 
             // Find an external, vector process that already has a handle
             // to the target process, with virtual memory R/W permissions
@@ -131,6 +131,10 @@ namespace Somno.IPC
         /// <exception cref="InvalidOperationException">Thrown when a type is given, of which the size exceeds the IPC shared memory region.</exception>
         public T ReadProcessMemory<T>(ulong address) where T : unmanaged
         {
+            if(vectorProcess.HasExited) {
+                throw new Exception("The vector process is not running.");
+            }
+
             if(address == 0) {
                 throw new InvalidOperationException("Attempted to read from a null memory location.");
             }
@@ -165,7 +169,7 @@ namespace Somno.IPC
                 ipc->PendingRequest = true;
 
                 Terminal.LogInfo("Waiting for the portal agent to terminate...");
-                while(ipc->PendingRequest) {
+                while(ipc->PendingRequest && !vectorProcess.HasExited) {
                     Thread.Sleep(0);
                 }
 
@@ -175,6 +179,15 @@ namespace Somno.IPC
 
             mapper?.UnmapLibrary();
             mapper = null;
+        }
+
+        public override string ToString()
+        {
+            if(ipc == null) {
+                return "(closed portal agent)";
+            } else {
+                return $"(portal agent: P: {ipc->PendingRequest}, ID: 0x{(byte)ipc->RequestID:X2}, d64: {ipc->ReadPayload64():X2})";
+            }
         }
 
         public void Dispose() => Close();

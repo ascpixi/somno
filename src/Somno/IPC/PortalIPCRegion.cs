@@ -23,7 +23,7 @@ namespace Somno.IPC
         /// </summary>
         public PortalIPCRequest RequestID;
 
-        public fixed byte Payload[32]; // this would usually be a fixed struct but NAOT generates invalid IL for some reason
+        public fixed byte Payload[32];
 
         public ulong ReadPayload64()
         {

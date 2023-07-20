@@ -9,11 +9,26 @@ ALIGN 16
 ss_nt_delayexecution PROC
 	mov   r9, [rsp]			; uint64_t temp = (caller)
 	xor   r9, 06F002867h	; (naive XOR encryption)
+
+		; (obfuscation)
+		jmp		$ + 6
+		db 0EBh
+		db 0FEh
+		db 048h
+		db 0B8h
+
 	push  r9				; Push (temp) onto the stack
 	push  rbx				; Push original RBX (used by JMP RBX, it's non-volatile)
 	xor   r9, r9			; temp = 0
 
 	mov	[rsp + 16], r9		; (caller) = temp (0)
+
+		; (obfuscation)
+		jmp		$ + 6
+		db 0CDh
+		db 054h
+		db 048h
+		db 0B8h
 
 	sub rsp, 4096
 

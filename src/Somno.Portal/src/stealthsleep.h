@@ -119,13 +119,14 @@ bool ss_sleep_init(void* omit) {
         return false;
     }
 
-    region.addr[0] = 0x0F;	// syscall
-    region.addr[1] = 0x05;
-    region.addr[2] = 0xFF;	// jmp rbx
-    region.addr[3] = 0xE3;
+    region.addr[0] = 0x15;  // (junk)
+    region.addr[1] = 0x0F;	// syscall
+    region.addr[2] = 0x05;
+    region.addr[3] = 0xFF;	// jmp rbx
+    region.addr[4] = 0xE3;
 
     LOG_INFO("Successfully written to the target memory region.");
-    ss_syscall_trampoline = region.addr;
+    ss_syscall_trampoline = region.addr + 1;
 
     // Restore the previous protection flags.
     protectSuccess = WwVirtualProtect(

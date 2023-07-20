@@ -36,24 +36,24 @@ typedef struct ipc_region {
 
 __pragma(pack(pop))
 
-uint64_t ipc_payload_read64(ipc_region_t* map, uint32_t* counter) {
+inline uint64_t ipc_payload_read64(ipc_region_t* map, uint32_t* counter) {
     auto value = *(uint64_t*)(map->payload + *counter);
     *counter += sizeof(uint64_t);
     return value;
 }
 
-uint64_t ipc_payload_read64(ipc_region_t* map) {
+inline uint64_t ipc_payload_read64(ipc_region_t* map) {
     auto value = *(uint64_t*)(map->payload);
     return value;
 }
 
-uint32_t ipc_payload_read32(ipc_region_t* map, uint32_t* counter) {
+inline uint32_t ipc_payload_read32(ipc_region_t* map, uint32_t* counter) {
     auto value = *(uint32_t*)(map->payload + *counter);
     *counter += sizeof(uint32_t);
     return value;
 }
 
-uint32_t ipc_payload_read32(ipc_region_t* map) {
+inline uint32_t ipc_payload_read32(ipc_region_t* map) {
     auto value = *(uint32_t*)(map->payload);
     return value;
 }

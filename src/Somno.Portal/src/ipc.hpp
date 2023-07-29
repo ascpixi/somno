@@ -13,9 +13,14 @@
 
 // Represents the IPC request ID for a single IPC request.
 enum ipc_request_id : uint8_t {
-    ipcid_Handshake         = 0xAA,
-    ipcid_ReadProcessMemory = 0xB1,
-    ipcid_Terminate         = 0xBF
+    // Somno Root Portal Agent Commands
+    ipcid_Handshake         = 0xAA,         // Establish a connection.
+    ipcid_ReadProcessMemory = 0xB1,         // Read memory of a process.
+    ipcid_Terminate         = 0xBF,         // Close the agent.
+
+    // Somno Root Portal Agent commands (unsupported)
+    ipcidr_Handshake         = 0xCC,        // Establish a connection.
+    ipcidr_ReadProcessMemory = 0xD1,        // Read memory of a process.
 };
 
 __pragma(pack(push, 1))

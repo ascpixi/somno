@@ -20,7 +20,9 @@ namespace Somno
         static Portal? mainPortal;
         static void Main(string[] args)
         {
-            SafetyCheck.VerifyGenuine();
+            GenuineCheck.VerifyGenuine();
+            SafetyCheck.CheckForIncompatibleSoftware();
+
             Kernel32.SetConsoleCtrlHandler(ConsoleExitHandler, true);
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit(false);
 
@@ -43,20 +45,19 @@ namespace Somno
 
             //Portal.EstablishConnection("ConsoleApp22");
             //uint secret = Portal.ReadProcessMemory<uint>(0x7FFB8F10D380);
-            mainPortal = new Portal("ConsoleApp22");
+            mainPortal = new Portal("notepad");
             Terminal.LogInfo("Portal is fine");
 
-            uint secret = mainPortal.ReadProcessMemory<uint>(0x7FFC3534D380);
-            Terminal.LogInfo($"The secret is {secret}!");
+            //uint secret = mainPortal.ReadProcessMemory<uint>(0x7FFC3534D380);
+            //Terminal.LogInfo($"The secret is {secret}!");
 
-            Terminal.LogInfo("OK, try two");
+            //Terminal.LogInfo("OK, try two");
 
-            secret = mainPortal.ReadProcessMemory<uint>(0x7FFC3534D380);
-            Terminal.LogInfo($"The secret is {secret}!");
-
-            Terminal.LogInfo("OK!");
+            //secret = mainPortal.ReadProcessMemory<uint>(0x7FFC3534D380);
+            //Terminal.LogInfo($"The secret is {secret}!");
 
             while (true) {
+                Terminal.LogInfo(mainPortal.ToString());
                 Thread.Sleep(500);
             }
         }

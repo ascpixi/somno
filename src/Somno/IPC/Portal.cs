@@ -23,12 +23,16 @@ namespace Somno.IPC
         const ulong IPCHandshakeSignature = 0x488D0411EBFE90C3;
         const ulong IPCHandshakeResponse  = 0xDEADBEEFDEADBEEF;
 
-        static Process AwaitProcess(string target)
+        static Process AwaitProcess(string target, out bool wasAlreadyRunning)
         {
+            wasAlreadyRunning = true;
+
             bool waitMessageWritten = false;
             while (true) {
                 var proc = Process.GetProcessesByName(target);
                 if (proc.Length == 0) {
+                    wasAlreadyRunning = false;
+
                     if (!waitMessageWritten) {
                         Terminal.LogInfo($"Waiting for '{target}.exe'...");
                         waitMessageWritten = true;
@@ -51,7 +55,17 @@ namespace Somno.IPC
         /// <exception cref="InvalidDataException">Thrown when a part of received IPC data is invalid. </exception>
         public Portal(string target)
         {
-            Process targetProcess = AwaitProcess(target);
+            Process targetProcess = AwaitProcess(target, out var wasAlreadyRunning);
+            if(wasAlreadyRunning) {
+                Terminal.LogWarning("The given process was already running when Somno was started.");
+                Terminal.LogWarning("It's recommended to run Somno first, before the target process.");
+                Terminal.LogWarning("Press [ENTER] to load the Somno Portal Agent.");
+            } else {
+                Terminal.LogInfo("Process detected. Press [ENTER] to load the Somno Portal Agent.");
+                Terminal.LogInfo("Please note that it is recommended to wait ~5 minutes before loading SPA.");
+            }
+
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
 
             // Find an external, vector process that already has a handle
             // to the target process, with virtual memory R/W permissions

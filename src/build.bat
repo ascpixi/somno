@@ -11,11 +11,6 @@ dotnet publish -r win-x64 -c %1 -p:IsCLI=true
 if %errorlevel% neq 0 goto fail
 cd ..
 
-cd Somno.Portal
-"%MSBUILD_PATH%" Somno.Portal.vcxproj /p:Configuration=%1 /p:Platform=x64
-if %errorlevel% neq 0 goto fail
-cd ..
-
 cd Somno
 dotnet publish -r win-x64 -c %1 /p:RepackagePortalAgent=true
 if %errorlevel% neq 0 goto fail

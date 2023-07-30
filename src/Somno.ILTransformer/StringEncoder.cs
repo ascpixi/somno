@@ -50,10 +50,13 @@ namespace Somno.ILTransformer
                         continue;
                     }
 
+                    method.Body.SimplifyMacros();
+
                     var body = method.Body.Instructions;
 
                     for (int i = 0; i < body.Count; i++) {
                         var inst = body[i];
+
                         if (inst.OpCode.Code != Code.Ldstr) {
                             continue;
                         }
@@ -68,13 +71,27 @@ namespace Somno.ILTransformer
                         var encoded = Encode(operand, key);
 
                         body.Remove(inst);
-                        body.Insert(i, Instruction.Create(OpCodes.Ldstr, key));
+
+                        var first = Instruction.Create(OpCodes.Ldstr, key);
+                        body.Insert(i, first);
                         body.Insert(i + 1, Instruction.Create(OpCodes.Ldstr, encoded));
                         body.Insert(i + 2, Instruction.Create(OpCodes.Call, decodeMethod));
+
+                        // Find branches that were pointing to the instruction we deleted,
+                        // and re-route them to the first instruction of our injected snippet.
+                        var branchesPendingCorrection =
+                            body.Where(x => x.OpCode.Code is Code.Br or Code.Brfalse or Code.Brtrue)
+                                .Where(x => x.Operand == inst);
+
+                        foreach (var branch in branchesPendingCorrection) {
+                            branch.Operand = first;
+                        }
 
                         i += 2; // we've inserted two more instructions
                         stringsEncoded++;
                     }
+
+                    method.Body.OptimizeMacros();
                 }
             }
 

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Somno.Native
 {
     /// <summary>
     /// Exposes functions from the <c>KERNEL32</c> Dynamic-Link Library.
     /// </summary>
-    internal static partial class Kernel32
+    internal unsafe static partial class Kernel32
     {
         /// <summary>
         /// Opens an existing local process object.
@@ -57,9 +58,35 @@ namespace Somno.Native
         /// <param name="lpModuleName">The name of the loaded module (either a .dll or .exe file). If the file name extension is omitted, the default library extension .dll is appended. The file name string can include a trailing point character (.) to indicate that the module name has no extension. The string does not have to specify a path. When specifying a path, be sure to use backslashes (\), not forward slashes (/). The name is compared (case independently) to the names of modules currently mapped into the address space of the calling process.</param>
         /// <returns>If the function succeeds, the return value is a handle to the specified module.</returns>
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(
-            string? lpModuleName
+        public static extern IntPtr GetModuleHandle(string? lpModuleName);
+
+        /// <summary>
+        /// Loads the specified module into the address space of the calling process. The specified module may cause other modules to be loaded.
+        /// </summary>
+        /// <param name="lpLibFileName">The name of the module. This can be either a library module (a .dll file) or an executable module (an .exe file).</param>
+        /// <returns>If the function succeeds, the return value is a handle to the module.</returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        public static extern nint LoadLibrary([In] string lpLibFileName);
+
+        /// <summary>
+        /// Retrieves the address of an exported function (also known as a procedure) or variable from the specified dynamic-link library (DLL).
+        /// </summary>
+        /// <param name="hModule">A handle to the DLL module that contains the function or variable. The LoadLibrary, LoadLibraryEx, LoadPackagedLibrary, or GetModuleHandle function returns this handle.</param>
+        /// <param name="lpProcName">The function or variable name, or the function's ordinal value. If this parameter is an ordinal value, it must be in the low-order word; the high-order word must be zero.</param>
+        /// <returns>If the function succeeds, the return value is the address of the exported function or variable.</returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        public static extern void* GetProcAddress(
+            [In] nint hModule,
+            [In] string lpProcName
         );
+
+        /// <summary>
+        /// Frees the loaded dynamic-link library (DLL) module and, if necessary, decrements its reference count. When the reference count reaches zero, the module is unloaded from the address space of the calling process and the handle is no longer valid.
+        /// </summary>
+        /// <param name="hLibModule">A handle to the loaded library module. The LoadLibrary, LoadLibraryEx, GetModuleHandle, or GetModuleHandleEx function returns this handle.</param>
+        /// <returns>If the function succeeds, the return value is nonzero.</returns>
+        [DllImport("kernel32.dll")]
+        public static extern bool FreeLibrary([In] nint hLibModule);
 
         // https://learn.microsoft.com/en-us/windows/console/setconsolectrlhandler?WT.mc_id=DT-MVP-5003978
         /// <summary>

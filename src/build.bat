@@ -16,8 +16,13 @@ cd Somno.Portal
 if %errorlevel% neq 0 goto fail
 cd ..
 
+cd Somno.WindowHost
+"%MSBUILD_PATH%" Somno.WindowHost.vcxproj /p:Configuration=%1 /p:Platform=x64
+if %errorlevel% neq 0 goto fail
+cd ..
+
 cd Somno
-dotnet publish -r win-x64 -c %1 /p:RepackagePortalAgent=true
+dotnet publish -r win-x64 -c %1 /p:RepackagePortalAgent=true /p:RepackageWindowHost=true
 if %errorlevel% neq 0 goto fail
 cd ..
 

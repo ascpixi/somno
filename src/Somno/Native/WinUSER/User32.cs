@@ -21,6 +21,9 @@ namespace Somno.Native.WinUSER
             [In] ref WndClassEx lpwcx
         );
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, int uFlags);
+
         /// <summary>
         /// Unregisters a window class, freeing the memory required for the class.
         /// </summary>
@@ -104,6 +107,9 @@ namespace Somno.Native.WinUSER
         public static extern bool TranslateMessage(
             [In] ref WndMessage lpMsg
         );
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 
         /// <summary>
         /// Dispatches a message to a window procedure. It is typically used to dispatch a message retrieved by the GetMessage function.

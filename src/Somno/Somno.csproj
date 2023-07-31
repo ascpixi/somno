@@ -34,12 +34,12 @@
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
-        <DebugType>none</DebugType>
+        <!--<DebugType>none</DebugType>
         <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
         <StripSymbols>true</StripSymbols>
         <DebuggerSupport>false</DebuggerSupport>
         <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
-        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>-->
     </PropertyGroup>
     
     <Target Name="ApplyILTransformations" BeforeTargets="IlcCompile">
@@ -62,8 +62,21 @@
 
         <Exec Command="$(PackagerPath) pack d2889fe9933f8341cbc923929fb94761 $(PortalBinaryPath) $(PortalResourcePath)" />
     </Target>
+
+	<Target Name="PackageWindowHost" Condition="'$(RepackageWindowHost)'=='true'" BeforeTargets="FindInvalidProjectReferences">
+		<PropertyGroup>
+			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+			<PackagerPath>$(SolutionDir)/Somno.Packager/bin/$(Configuration)/net7.0/win-x64/Somno.Packager.exe</PackagerPath>
+			<WndHostBinaryPath>$(SolutionDir)/Somno.WindowHost/bin/Somno.WindowHost.dll</WndHostBinaryPath>
+			<WndHostResourcePath Condition="'$(IsIDE)'!='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64/publish/resource/data002.bin</WndHostResourcePath>
+			<WndHostResourcePath Condition="'$(IsIDE)'=='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/resource/data002.bin</WndHostResourcePath>
+		</PropertyGroup>
+
+		<Exec Command="$(PackagerPath) pack 61429914993d17b0291cac5b4c6d2a30 $(WndHostBinaryPath) $(WndHostResourcePath)" />
+	</Target>
     
     <ItemGroup>
+      <ProjectReference Include="..\Lunar\Lunar.csproj" />
       <ProjectReference Include="..\Somno.Packager\Somno.Packager.csproj" />
     </ItemGroup>
     

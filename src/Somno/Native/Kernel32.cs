@@ -68,6 +68,13 @@ namespace Somno.Native
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
         public static extern nint LoadLibrary([In] string lpLibFileName);
 
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenThread(ThreadAccess dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+        [DllImport("kernel32.dll")]
+        public static extern uint SuspendThread(IntPtr hThread);
+        [DllImport("kernel32.dll")]
+        public static extern int ResumeThread(IntPtr hThread);
+
         /// <summary>
         /// Retrieves the address of an exported function (also known as a procedure) or variable from the specified dynamic-link library (DLL).
         /// </summary>

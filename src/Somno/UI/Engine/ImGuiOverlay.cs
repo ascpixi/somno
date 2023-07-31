@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortice.Direct3D;
@@ -22,98 +23,63 @@ using Size = System.Drawing.Size;
 
 namespace Somno.UI.Engine
 {
+    [SupportedOSPlatform("windows")]
     internal abstract class ImGuiOverlay : IDisposable
     {
         public Win32Window Window { get; private set; }
+        WndClassEx wndClass;
+        readonly string windowClassName;
 
-        private readonly string title;
-        private readonly Format format;
+        readonly Format dxFormat;
+        ID3D11Device dxDevice;
+        ID3D11DeviceContext dxDeviceCtx;
+        IDXGISwapChain dxSwapChain;
+        ID3D11Texture2D dxBackBuffer;
+        ID3D11RenderTargetView dxRenderView;
 
-        private WndClassEx wndClass;
-        private ID3D11Device device;
-        private ID3D11DeviceContext deviceContext;
-        private IDXGISwapChain swapChain;
-        private ID3D11Texture2D backBuffer;
-        private ID3D11RenderTargetView renderView;
+        ImGuiRenderer renderer;
+        ImGuiInputHandler inputHandler;
 
-        private ImGuiRenderer renderer;
-        private ImGuiInputHandler inputHandler;
+        IntPtr selfPointer;
+        Thread renderThread;
+        readonly CancellationTokenSource cancellationTokenSource;
+        volatile bool overlayIsReady;
 
-        private bool _disposedValue;
-        private IntPtr selfPointer;
-        private Thread renderThread;
-        private volatile CancellationTokenSource cancellationTokenSource;
-        private volatile bool overlayIsReady;
+        bool isClickable;
+        WindowExStyles clickableStyles;
+        WindowExStyles notClickableStyles;
+        WindowHost winHost;
+        Process hostProcess;
 
-        private bool replaceFont = false;
-        private ushort[]? fontCustomGlyphRange;
-        private string fontPathName;
-        private float fontSize;
-
-        private bool isClickable;
-        private WindowExStyles clickableStyles;
-        private WindowExStyles notClickableStyles;
-
-        private Dictionary<string, (IntPtr Handle, uint Width, uint Height)> loadedTexturesPtrs;
+        readonly Dictionary<string, (IntPtr Handle, uint Width, uint Height)> loadedTexturesPtrs;
+        bool isDisposed = false;
 
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Overlay"/> class.
         /// </summary>
-        public ImGuiOverlay() : this("Overlay")
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Overlay"/> class.
-        /// </summary>
-        /// <param name="windowTitle">
-        /// Title of the window created by the overlay
-        /// </param>
-        public ImGuiOverlay(string windowTitle) : this(windowTitle, false)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Overlay"/> class.
-        /// </summary>
         /// <param name="dpiAware">
         /// should the overlay scale with windows scale value or not.
         /// </param>
-        public ImGuiOverlay(bool dpiAware) : this("Overlay", dpiAware)
+        public ImGuiOverlay(bool dpiAware = false)
         {
-        }
+            VSync = true;
+            overlayIsReady = false;
+            cancellationTokenSource = new();
+            dxFormat = Format.R8G8B8A8_UNorm;
+            loadedTexturesPtrs = new();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Overlay"/> class.
-        /// </summary>
-        /// <param name="windowTitle">
-        /// Title of the window created by the overlay
-        /// </param>
-        /// <param name="dpiAware">
-        /// should the overlay scale with windows scale value or not.
-        /// </param>
-        public ImGuiOverlay(string windowTitle, bool dpiAware)
-        {
-            this.VSync = true;
-            this._disposedValue = false;
-            this.overlayIsReady = false;
-            this.title = windowTitle;
-            this.cancellationTokenSource = new();
-            this.format = Format.R8G8B8A8_UNorm;
-            this.loadedTexturesPtrs = new();
-
+            windowClassName = RandomProvider.GenerateString(Random.Shared.Next(13, 18));
             Window = null!;
-            device = null!;
-            swapChain = null!;
-            deviceContext = null!;
-            backBuffer = null!;
-            renderView = null!;
+            dxDevice = null!;
+            dxSwapChain = null!;
+            dxDeviceCtx = null!;
+            dxBackBuffer = null!;
+            dxRenderView = null!;
             renderer = null!;
             inputHandler = null!;
             renderThread = null!;
-            fontPathName = null!;
 
             if (dpiAware) {
                 User32.SetProcessDPIAware();
@@ -130,14 +96,14 @@ namespace Somno.UI.Engine
         /// <returns>A Task that finishes once the overlay window is ready</returns>
         public async Task Start()
         {
-            this.renderThread = new Thread(async () => {
-                await this.InitializeResources();
-                this.renderer.Start();
-                this.RunInfiniteLoop(this.cancellationTokenSource.Token);
+            renderThread = new Thread(async () => {
+                await InitializeResources();
+                renderer.Start();
+                RunInfiniteLoop(cancellationTokenSource.Token);
             });
 
-            this.renderThread.Start();
-            await WaitHelpers.SpinWait(() => this.overlayIsReady);
+            renderThread.Start();
+            await WaitHelpers.SpinWait(() => overlayIsReady);
         }
 
         /// <summary>
@@ -146,68 +112,28 @@ namespace Somno.UI.Engine
         /// <returns>A task that finishes once the overlay window closes</returns>
         public virtual async Task Run()
         {
-            if (!this.overlayIsReady) {
-                await this.Start();
+            if (!overlayIsReady) {
+                await Start();
             }
 
-            await WaitHelpers.SpinWait(() => this.cancellationTokenSource.IsCancellationRequested);
+            await WaitHelpers.SpinWait(() => cancellationTokenSource.IsCancellationRequested);
         }
 
         /// <summary>
-        /// Safely Closes the Overlay.
+        /// Safely closes the overlay.
         /// </summary>
         public virtual void Close()
         {
-            this.cancellationTokenSource.Cancel();
+            cancellationTokenSource.Cancel();
         }
 
         /// <summary>
-        /// Safely dispose all the resources created by the overlay
+        /// Safely disposes all of the resources created by the overlay.
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Replaces the ImGui font with another one.
-        /// </summary>
-        /// <param name="pathName">pathname to the TTF font file.</param>
-        /// <param name="size">font size to load.</param>
-        /// <param name="language">supported language by the font.</param>
-        /// <returns>true if the font replacement is valid otherwise false.</returns>
-        public bool ReplaceFont(string pathName, int size)
-        {
-            if (!File.Exists(pathName)) {
-                return false;
-            }
-
-            this.fontPathName = pathName;
-            this.fontSize = size;
-            this.replaceFont = true;
-            this.fontCustomGlyphRange = null;
-            return true;
-        }
-
-        /// <summary>
-        /// Replaces the ImGui font with another one.
-        /// </summary>
-        /// <param name="pathName">pathname to the TTF font file.</param>
-        /// <param name="size">font size to load.</param>
-        /// <param name="glyphRange">custom glyph range of the font to load. Read <see cref="FontGlyphRangeType"/> for more detail.</param>
-        /// <returns>>true if the font replacement is valid otherwise false.</returns>
-        public bool ReplaceFont(string pathName, int size, ushort[] glyphRange)
-        {
-            if (!File.Exists(pathName)) {
-                return false;
-            }
-
-            fontPathName = pathName;
-            fontSize = size;
-            fontCustomGlyphRange = glyphRange;
-            replaceFont = true;
-            return true;
         }
 
         /// <summary>
@@ -220,13 +146,19 @@ namespace Somno.UI.Engine
         /// </summary>
         public Point Position {
             get {
-                return this.Window.Dimensions.Location;
+                return Window.Dimensions.Location;
             }
 
             set {
-                if (this.Window.Dimensions.Location != value) {
-                    User32.MoveWindow(this.Window.Handle, value.X, value.Y, this.Window.Dimensions.Width, this.Window.Dimensions.Height, true);
-                    this.Window.Dimensions.Location = value;
+                if (Window.Dimensions.Location != value) {
+                    User32.MoveWindow(
+                        Window.Handle,
+                        value.X, value.Y,
+                        Window.Dimensions.Width, Window.Dimensions.Height,
+                        true
+                    );
+
+                    Window.Dimensions.Location = value;
                 }
             }
         }
@@ -236,22 +168,19 @@ namespace Somno.UI.Engine
         /// </summary>
         public Size Size {
             get {
-                return this.Window.Dimensions.Size;
+                return Window.Dimensions.Size;
             }
             set {
-                if (this.Window.Dimensions.Size != value) {
-                    User32.MoveWindow(this.Window.Handle, this.Window.Dimensions.X, this.Window.Dimensions.Y, value.Width, value.Height, true);
-                    this.Window.Dimensions.Size = value;
-                }
-            }
-        }
+                if (Window.Dimensions.Size != value) {
+                    User32.MoveWindow(
+                        Window.Handle,
+                        Window.Dimensions.X, Window.Dimensions.Y,
+                        value.Width, value.Height,
+                        true
+                    );
 
-        /// <summary>
-        /// Gets the number of displays available on the computer.
-        /// </summary>
-        public static int NumberVideoDisplays {
-            get {
-                return User32.GetSystemMetrics(0x50); // SM_CMONITORS
+                    Window.Dimensions.Size = value;
+                }
             }
         }
 
@@ -268,7 +197,7 @@ namespace Somno.UI.Engine
         /// <param name="height">height of the loaded texture.</param>
         public void AddOrGetImagePointer(string filePath, bool srgb, out IntPtr handle, out uint width, out uint height)
         {
-            if (this.loadedTexturesPtrs.TryGetValue(filePath, out var data)) {
+            if (loadedTexturesPtrs.TryGetValue(filePath, out var data)) {
                 handle = data.Handle;
                 width = data.Width;
                 height = data.Height;
@@ -277,10 +206,10 @@ namespace Somno.UI.Engine
                 var decorderOptions = new DecoderOptions();
                 decorderOptions.Configuration.PreferContiguousImageBuffers = true;
                 using var image = Image.Load<Rgba32>(decorderOptions, filePath);
-                handle = this.renderer.CreateImageTexture(image, srgb ? Format.R8G8B8A8_UNorm_SRgb : Format.R8G8B8A8_UNorm);
+                handle = renderer.CreateImageTexture(image, srgb ? Format.R8G8B8A8_UNorm_SRgb : Format.R8G8B8A8_UNorm);
                 width = (uint)image.Width;
                 height = (uint)image.Height;
-                this.loadedTexturesPtrs.Add(filePath, new(handle, width, height));
+                loadedTexturesPtrs.Add(filePath, new(handle, width, height));
             }
         }
 
@@ -296,12 +225,12 @@ namespace Somno.UI.Engine
         /// <param name="handle">output pointer to the image in the graphic device.</param>
         public void AddOrGetImagePointer(string name, Image<Rgba32> image, bool srgb, out IntPtr handle)
         {
-            if (this.loadedTexturesPtrs.TryGetValue(name, out var data)) {
+            if (loadedTexturesPtrs.TryGetValue(name, out var data)) {
                 handle = data.Handle;
             }
             else {
-                handle = this.renderer.CreateImageTexture(image, srgb ? Format.R8G8B8A8_UNorm_SRgb : Format.R8G8B8A8_UNorm);
-                this.loadedTexturesPtrs.Add(name, new(handle, (uint)image.Width, (uint)image.Height));
+                handle = renderer.CreateImageTexture(image, srgb ? Format.R8G8B8A8_UNorm_SRgb : Format.R8G8B8A8_UNorm);
+                loadedTexturesPtrs.Add(name, new(handle, (uint)image.Width, (uint)image.Height));
             }
         }
 
@@ -312,8 +241,8 @@ namespace Somno.UI.Engine
         /// <returns> true if the image is removed otherwise false.</returns>
         public bool RemoveImage(string key)
         {
-            if (this.loadedTexturesPtrs.Remove(key, out var data)) {
-                return this.renderer.RemoveImageTexture(data.Handle);
+            if (loadedTexturesPtrs.Remove(key, out var data)) {
+                return renderer.RemoveImageTexture(data.Handle);
             }
 
             return false;
@@ -323,35 +252,37 @@ namespace Somno.UI.Engine
 
         protected virtual void Dispose(bool disposing)
         {
-            if (this._disposedValue) {
+            if (isDisposed) {
                 return;
             }
 
             if (disposing) {
-                this.renderThread?.Join();
-                foreach (var key in this.loadedTexturesPtrs.Keys.ToArray()) {
-                    this.RemoveImage(key);
+                renderThread?.Join();
+                foreach (var key in loadedTexturesPtrs.Keys.ToArray()) {
+                    RemoveImage(key);
                 }
 
-                this.cancellationTokenSource?.Dispose();
-                this.swapChain?.Release();
-                this.backBuffer?.Release();
-                this.renderView?.Release();
-                this.renderer?.Dispose();
-                this.Window?.Dispose();
-                this.deviceContext?.Release();
-                this.device?.Release();
+                cancellationTokenSource?.Dispose();
+                dxSwapChain?.Release();
+                dxBackBuffer?.Release();
+                dxRenderView?.Release();
+                renderer?.Dispose();
+                Window?.Dispose();
+                dxDeviceCtx?.Release();
+                dxDevice?.Release();
+                winHost.Dispose();
+                hostProcess.Kill();
             }
 
-            if (this.selfPointer != IntPtr.Zero) {
-                if (!User32.UnregisterClass(this.title, this.selfPointer)) {
-                    throw new Exception($"Failed to Unregister {this.title} class during dispose.");
+            if (selfPointer != IntPtr.Zero) {
+                if (!User32.UnregisterClass(windowClassName, selfPointer)) {
+                    throw new Exception($"Failed to Unregister {windowClassName} class during dispose.");
                 }
 
-                this.selfPointer = IntPtr.Zero;
+                selfPointer = IntPtr.Zero;
             }
 
-            this._disposedValue = true;
+            isDisposed = true;
         }
 
         /// <summary>
@@ -370,115 +301,138 @@ namespace Somno.UI.Engine
 
         private void RunInfiniteLoop(CancellationToken token)
         {
+            OnResize();
+
             var stopwatch = Stopwatch.StartNew();
             float deltaTime = 0f;
             var clearColor = new Color4(0.0f);
             while (!token.IsCancellationRequested) {
+                User32.SetWindowLong(
+    winHost.Handle,
+    (int)WindowLongParam.GWL_EXSTYLE,
+    (uint)(WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST)
+);
                 deltaTime = stopwatch.ElapsedTicks / (float)Stopwatch.Frequency;
                 stopwatch.Restart();
-                this.Window.PumpEvents(); // hot 1.4%
-                SetOverlayClickable(this.inputHandler.Update()); // hot 7%
-                this.renderer.Update(deltaTime, Render);
-                this.deviceContext.OMSetRenderTargets(renderView);
-                this.deviceContext.ClearRenderTargetView(renderView, clearColor);
-                this.renderer.Render(); // hot 4%
+                Window.PumpEvents(); // hot 1.4%
+                SetOverlayClickable(inputHandler.Update()); // hot 7%
+                renderer.Update(deltaTime, Render);
+                dxDeviceCtx.OMSetRenderTargets(dxRenderView);
+                dxDeviceCtx.ClearRenderTargetView(dxRenderView, clearColor);
+                renderer.Render(); // hot 4%
 
-                this.swapChain.Present(0, PresentFlags.None); // hot 15%
-
-                this.ReplaceFontIfRequired();
+                dxSwapChain.Present(0, PresentFlags.None); // hot 15%
 
                 Thread.Sleep(8);
             }
         }
 
-        private void ReplaceFontIfRequired()
-        {
-            if (this.replaceFont && this.renderer != null) {
-                this.renderer.UpdateFontTexture(this.fontPathName, this.fontSize, this.fontCustomGlyphRange);
-                this.replaceFont = false;
-            }
-        }
-
         private void OnResize()
         {
-            if (renderView == null)//first show
+            if (dxRenderView == null) //first show
             {
-                using var dxgiFactory = device.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
+                using var dxgiFactory = dxDevice.QueryInterface<IDXGIDevice>().GetParent<IDXGIAdapter>().GetParent<IDXGIFactory>();
                 var swapchainDesc = new SwapChainDescription() {
                     BufferCount = 1,
-                    BufferDescription = new ModeDescription(this.Window.Dimensions.Width, this.Window.Dimensions.Height, this.format),
+                    BufferDescription = new ModeDescription(Window.Dimensions.Width, Window.Dimensions.Height, dxFormat),
                     Windowed = true,
-                    OutputWindow = this.Window.Handle,
+                    OutputWindow = Window.Handle,
                     SampleDescription = new SampleDescription(1, 0),
                     SwapEffect = SwapEffect.Discard,
                     BufferUsage = Usage.RenderTargetOutput,
                 };
 
-                this.swapChain = dxgiFactory.CreateSwapChain(this.device, swapchainDesc);
-                dxgiFactory.MakeWindowAssociation(this.Window.Handle, WindowAssociationFlags.IgnoreAll);
+                dxSwapChain = dxgiFactory.CreateSwapChain(dxDevice, swapchainDesc);
+                dxgiFactory.MakeWindowAssociation(Window.Handle, WindowAssociationFlags.IgnoreAll);
 
-                this.backBuffer = this.swapChain.GetBuffer<ID3D11Texture2D>(0);
-                this.renderView = this.device.CreateRenderTargetView(backBuffer);
+                dxBackBuffer = dxSwapChain.GetBuffer<ID3D11Texture2D>(0);
+                dxRenderView = dxDevice.CreateRenderTargetView(dxBackBuffer);
             }
             else {
-                this.renderView.Dispose();
-                this.backBuffer.Dispose();
+                dxRenderView.Dispose();
+                dxBackBuffer.Dispose();
 
-                this.swapChain.ResizeBuffers(1, this.Window.Dimensions.Width, this.Window.Dimensions.Height, this.format, SwapChainFlags.None);
+                dxSwapChain.ResizeBuffers(1, Window.Dimensions.Width, Window.Dimensions.Height, dxFormat, SwapChainFlags.None);
 
-                backBuffer = this.swapChain.GetBuffer<ID3D11Texture2D1>(0);
-                renderView = this.device.CreateRenderTargetView(backBuffer);
+                dxBackBuffer = dxSwapChain.GetBuffer<ID3D11Texture2D1>(0);
+                dxRenderView = dxDevice.CreateRenderTargetView(dxBackBuffer);
             }
 
-            this.renderer.Resize(this.Window.Dimensions.Width, this.Window.Dimensions.Height);
+            renderer.Resize(Window.Dimensions.Width, Window.Dimensions.Height);
         }
 
         private async Task InitializeResources()
         {
             D3D11.D3D11CreateDevice(
-            null,
+                null,
                 DriverType.Hardware,
                 DeviceCreationFlags.None,
                 new[] { FeatureLevel.Level_10_0 },
-                out this.device,
-                out this.deviceContext);
-            this.selfPointer = Kernel32.GetModuleHandle(null);
-            this.wndClass = new WndClassEx {
+                out dxDevice,
+                out dxDeviceCtx
+            );
+
+            selfPointer = Kernel32.GetModuleHandle(null);
+
+            wndClass = new WndClassEx {
                 Size = Unsafe.SizeOf<WndClassEx>(),
                 Styles =
                     WindowClassStyles.HorizontalRedraw |
                     WindowClassStyles.VerticalRedraw |
                     WindowClassStyles.ParentDC,
                 WindowProc = WndProc,
-                InstanceHandle = this.selfPointer,
+                InstanceHandle = selfPointer,
                 CursorHandle = User32.LoadCursor(IntPtr.Zero, SystemCursor.IDC_ARROW),
                 BackgroundBrushHandle = IntPtr.Zero,
                 IconHandle = IntPtr.Zero,
                 MenuName = string.Empty,
-                ClassName = this.title,
+                ClassName = windowClassName,
                 SmallIconHandle = IntPtr.Zero,
                 ClassExtraBytes = 0,
                 WindowExtraBytes = 0
             };
 
-            if (User32.RegisterClassEx(ref this.wndClass) == 0) {
-                throw new Exception($"Failed to Register class of name {this.wndClass.ClassName}");
+            if (User32.RegisterClassEx(ref wndClass) == 0) {
+                throw new Exception($"Failed to register the window class.");
             }
 
-            this.Window = new Win32Window(
-                wndClass.ClassName,
-                800,
-                600,
-                0,
-                0,
-                this.title,
-                WindowStyles.WS_POPUP,
-                WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST);
-            this.renderer = new ImGuiRenderer(device, deviceContext, 800, 600);
-            this.inputHandler = new ImGuiInputHandler(this.Window.Handle);
-            this.overlayIsReady = true;
-            await this.PostInitialized();
-            User32.ShowWindow(this.Window.Handle, ShowWindowCommand.ShowMaximized);
+            //Window = new Win32Window(
+            //    wndClass.ClassName,
+            //    800,
+            //    600,
+            //    0,
+            //    0,
+            //    RandomProvider.GenerateSentence(3),
+            //    WindowStyles.WS_POPUP,
+            //    WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST
+            //);
+
+            hostProcess = Process.Start("Poopfart.exe");
+            Thread.Sleep(20);
+
+            winHost = new WindowHost(hostProcess, WndProc);
+            winHost.Start();
+            Window = new Win32Window(winHost.Handle);
+
+            User32.SetWindowLong(
+                winHost.Handle,
+                (int)WindowLongParam.GWL_STYLE,
+                (uint)WindowStyles.WS_POPUP
+            );
+
+            User32.SetWindowLong(
+                winHost.Handle,
+                (int)WindowLongParam.GWL_EXSTYLE,
+                (uint)(WindowExStyles.WS_EX_ACCEPTFILES | WindowExStyles.WS_EX_TOPMOST)
+            );
+
+            User32.SetWindowPos(winHost.Handle, 0, 0, 0, 1366, 768, -1);
+
+            renderer = new ImGuiRenderer(dxDevice, dxDeviceCtx, 800, 600);
+            inputHandler = new ImGuiInputHandler(Window.Handle);
+            overlayIsReady = true;
+            await PostInitialized();
+            User32.ShowWindow(Window.Handle, ShowWindowCommand.ShowMaximized);
             InitTransparency();
         }
 
@@ -490,7 +444,7 @@ namespace Somno.UI.Engine
         /// </param>
         internal void InitTransparency()
         {
-            var handle = this.Window.Handle;
+            var handle = Window.Handle;
 
             clickableStyles = (WindowExStyles)User32.GetWindowLong(handle, (int)WindowLongParam.GWL_EXSTYLE);
             notClickableStyles = clickableStyles | WindowExStyles.WS_EX_LAYERED | WindowExStyles.WS_EX_TRANSPARENT;
@@ -507,7 +461,7 @@ namespace Somno.UI.Engine
         /// <param name="wantClickable">Set to true if you want to make the window clickable otherwise false.</param>
         internal void SetOverlayClickable(bool wantClickable)
         {
-            var handle = this.Window.Handle;
+            var handle = Window.Handle;
 
             if (isClickable ^ wantClickable) {
                 if (wantClickable) {
@@ -529,9 +483,9 @@ namespace Somno.UI.Engine
                         case SizeMessage.SIZE_RESTORED:
                         case SizeMessage.SIZE_MAXIMIZED:
                             var lp = (int)lParam;
-                            this.Window.Dimensions.Width = lp & 0xFFFF;
-                            this.Window.Dimensions.Height = lp >> 16;
-                            this.OnResize();
+                            Window.Dimensions.Width = lp & 0xFFFF;
+                            Window.Dimensions.Height = lp >> 16;
+                            OnResize();
                             break;
                         default:
                             break;
@@ -539,7 +493,7 @@ namespace Somno.UI.Engine
 
                     break;
                 case WindowMessage.DESTROY:
-                    this.Close();
+                    Close();
                     break;
                 default:
                     break;
@@ -550,8 +504,10 @@ namespace Somno.UI.Engine
 
         private IntPtr WndProc(IntPtr hWnd, uint msg, UIntPtr wParam, IntPtr lParam)
         {
-            if (this.overlayIsReady) {
-                if (this.inputHandler.ProcessMessage((WindowMessage)msg, wParam, lParam) ||
+            Console.WriteLine($"WndProc");
+
+            if (overlayIsReady) {
+                if (inputHandler.ProcessMessage((WindowMessage)msg, wParam, lParam) ||
                     ProcessMessage((WindowMessage)msg, wParam, lParam)) {
                     return IntPtr.Zero;
                 }

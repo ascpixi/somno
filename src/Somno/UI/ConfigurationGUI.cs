@@ -13,6 +13,12 @@ namespace Somno.UI
     {
         public bool EnemyESP;
 
+        public ConfigurationGUI()
+        {
+            // TODO: auto sizing the overlay
+            //Size = new(GraphicsEnvironment)
+        }
+
         protected override Task PostInitialized()
         {
             // Hide from any window/screen capture

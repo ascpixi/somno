@@ -12,9 +12,24 @@ namespace Somno.UI.Engine.GDI
         public Win32Window(string wndClass, int width, int height, int x, int y, string title, WindowStyles style, WindowExStyles exStyle)
         {
             this.Dimensions = new Rectangle(x, y, width, height);
-            this.Handle = User32.CreateWindowEx((int)exStyle, wndClass, title, (int)style,
-                this.Dimensions.X, this.Dimensions.Y, this.Dimensions.Width, this.Dimensions.Height,
-                IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+            this.Handle = User32.CreateWindowEx(
+                (int)exStyle,
+                wndClass,
+                title,
+                (int)style,
+                this.Dimensions.X, this.Dimensions.Y,
+                this.Dimensions.Width, this.Dimensions.Height,
+                default, default, default, default
+            );
+        }
+
+        public Win32Window(IntPtr handle)
+        {
+            Handle = handle;
+
+            User32.GetWindowRect(handle, out var rect);
+            Dimensions = new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
         public void PumpEvents()

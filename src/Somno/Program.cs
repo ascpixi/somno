@@ -11,6 +11,7 @@ using Somno.Packager;
 using System.IO;
 using Somno.PortalAgent;
 using System.Globalization;
+using Somno.Native.WinUSER;
 
 namespace Somno
 {
@@ -31,6 +32,13 @@ namespace Somno
             Console.Clear();
             Terminal.Header("Somno Console v1.0.0", ConsoleColor.Black, ConsoleColor.DarkRed);
 
+
+            //Console.ReadLine();
+            //host.Dispose();
+            //proc.Kill();
+
+            //Console.WriteLine("bye");
+
             var gui = new ConfigurationGUI();
             _ = gui.Start().ContinueWith(
                 x => {
@@ -41,54 +49,6 @@ namespace Somno
                 },
                 TaskContinuationOptions.OnlyOnFaulted
             );
-
-
-            //Portal.EstablishConnection("ConsoleApp22");
-            //uint secret = Portal.ReadProcessMemory<uint>(0x7FFB8F10D380);
-
-            //string? stdinBuffer;
-            //ulong targetAddr;
-
-            //do {
-            //    Console.Write("Address to read: 0x");
-            //    stdinBuffer = Console.ReadLine();
-            //} while (
-            //    stdinBuffer == null ||
-            //    !ulong.TryParse(stdinBuffer, NumberStyles.HexNumber, null, out targetAddr)
-            //);
-
-            //string targetProcess;
-
-            //while (true) {
-            //    Console.Write("Target process name: ");
-            //    stdinBuffer = Console.ReadLine();
-            //    if (stdinBuffer == null)
-            //        continue;
-
-            //    targetProcess = stdinBuffer;
-            //    break;
-            //}
-
-            //mainPortal = new Portal(targetProcess);
-            //byte secret = mainPortal.ReadProcessMemory<byte>(targetAddr);
-            //Console.WriteLine($"Done. Value = {secret} (0x{secret:X2})");
-
-            //Console.WriteLine("Press any key to try again...");
-            //Console.ReadLine();
-
-            //byte secret2 = mainPortal.ReadProcessMemory<byte>(targetAddr);
-            //Console.WriteLine($"Done. Value = {secret2} (0x{secret2:X2})");
-
-            //Console.WriteLine("Press any key to close...");
-            //Console.ReadLine();
-            //mainPortal.Close();
-            //Console.WriteLine("Closed.");
-            //Console.ReadLine();
-
-            //while (true) {
-            //    Terminal.LogInfo(mainPortal.ToString());
-            //    Thread.Sleep(500);
-            //}
         }
 
         static bool terminating = false;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Somno.Native.WinUSER
 {
-    internal enum SystemCursor
+    internal enum SystemCursor : ushort
     {
         IDC_ARROW = 32512,
         IDC_IBEAM = 32513,

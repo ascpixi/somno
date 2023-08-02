@@ -18,15 +18,15 @@ namespace Somno.UI.Engine
     {
         const int VertexConstantBufferSize = 16 * 4;
 
-        ID3D11Device device;
-        ID3D11DeviceContext deviceContext;
+        readonly ID3D11Device device;
+        readonly ID3D11DeviceContext deviceContext;
+        readonly ImGuiRendererObjects devObj;
         ID3D11Buffer? vertexBuffer;
         ID3D11Buffer? indexBuffer;
         ID3D11SamplerState? fontSampler;
-        ImGuiRendererObjects devObj;
 
-        int vertexBufferSize = 5000, indexBufferSize = 10000;
         readonly Dictionary<IntPtr, ID3D11ShaderResourceView> textureResources = new();
+        int vertexBufferSize = 5000, indexBufferSize = 10000;
 
         public ImGuiRenderer(ID3D11Device device, ID3D11DeviceContext deviceContext, int width, int height)
         {
@@ -173,6 +173,7 @@ namespace Somno.UI.Engine
                         ctx.DrawIndexed((int)cmd.ElemCount, (int)(cmd.IdxOffset + global_idx_offset), (int)(cmd.VtxOffset + global_vtx_offset));
                     }
                 }
+
                 global_idx_offset += cmdList.IdxBuffer.Size;
                 global_vtx_offset += cmdList.VtxBuffer.Size;
             }
@@ -185,7 +186,7 @@ namespace Somno.UI.Engine
             if (device == null)
                 return;
 
-            this.DeRegisterAllTexture();
+            UnregisterAllTextures();
             fontSampler?.Release();
             indexBuffer?.Release();
             vertexBuffer?.Release();
@@ -213,15 +214,16 @@ namespace Somno.UI.Engine
 
         public bool RemoveImageTexture(IntPtr handle)
         {
-            using var tex = this.DeRegisterTexture(handle);
+            using var tex = UnregisterTexture(handle);
             return tex != null;
         }
 
         public void UpdateFontTexture(string fontPathName, float fontSize, ushort[]? fontCustomGlyphRange)
         {
             var io = ImGui.GetIO();
-            this.DeRegisterTexture(io.Fonts.TexID)?.Dispose();
+            UnregisterTexture(io.Fonts.TexID)?.Dispose();
             io.Fonts.Clear();
+
             var config = ImGuiNative.ImFontConfig_ImFontConfig();
             if (fontCustomGlyphRange == null) {
                 io.Fonts.AddFontFromFileTTF(fontPathName, fontSize, config, io.Fonts.GetGlyphRangesDefault());
@@ -232,7 +234,7 @@ namespace Somno.UI.Engine
                 }
             }
 
-            this.CreateFontsTexture();
+            CreateFontsTexture();
             ImGuiNative.ImFontConfig_destroy(config);
         }
 
@@ -302,7 +304,7 @@ namespace Somno.UI.Engine
             return imguiID;
         }
 
-        ID3D11ShaderResourceView? DeRegisterTexture(IntPtr texturePtr)
+        ID3D11ShaderResourceView? UnregisterTexture(IntPtr texturePtr)
         {
             if (textureResources.Remove(texturePtr, out var texture)) {
                 return texture;
@@ -311,10 +313,10 @@ namespace Somno.UI.Engine
             return null;
         }
 
-        void DeRegisterAllTexture()
+        void UnregisterAllTextures()
         {
             foreach (var key in textureResources.Keys.ToArray()) {
-                this.DeRegisterTexture(key)?.Release();
+                UnregisterTexture(key)?.Release();
             }
         }
     }

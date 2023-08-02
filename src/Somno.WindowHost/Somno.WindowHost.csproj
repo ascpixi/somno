@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PlatformTarget>x64</PlatformTarget>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<ErrorReport>none</ErrorReport>
+		
+		<Company></Company>
+		<Product></Product>
+		<Authors></Authors>
+		<Version></Version>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+		<PublishAot>true</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<OptimizationPreference>Size</OptimizationPreference>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<LinkerArg>/emitpogophaseinfo /pdbaltpath:_ /emittoolversioninfo:no</LinkerArg>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+		<DebuggerSupport>false</DebuggerSupport>
+		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+		<EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+		<EventSourceSupport>false</EventSourceSupport>
+		<HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+		<UseSystemResourceKeys>true</UseSystemResourceKeys>
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<Target Name="RemoveOriginalFilename" AfterTargets="CopyNativeBinary">
+		<PropertyGroup>
+			<RcEditPath>"$(ProjectDir)/../../tools/rcedit"</RcEditPath>
+			<BinaryPath>"$(ProjectDir)/bin/$(Configuration)/net7.0/win-x64/publish/Somno.WindowHost.exe"</BinaryPath>
+		</PropertyGroup>
+
+		<Exec
+			Command="$(RcEditPath) $(BinaryPath) --set-version-string OriginalFilename &quot;&quot;"
+		/>
+	</Target>
+	
+</Project>

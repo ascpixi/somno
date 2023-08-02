@@ -10,20 +10,6 @@ namespace Somno.Native
     internal unsafe static partial class Kernel32
     {
         /// <summary>
-        /// Opens an existing local process object.
-        /// </summary>
-        /// <param name="dwDesiredAccess">The access to the process object. This access right is checked against the security descriptor for the process. This parameter can be one or more of the process access rights.</param>
-        /// <param name="bInheritHandle">If this value is TRUE, processes created by this process will inherit the handle. Otherwise, the processes do not inherit this handle.</param>
-        /// <param name="dwProcessId">The identifier of the local process to be opened.</param>
-        /// <returns>If the function succeeds, the return value is an open handle to the specified process.</returns>
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr OpenProcess(
-            [In] ProcessAccessFlags dwDesiredAccess,
-            [In] bool bInheritHandle,
-            [In] uint dwProcessId
-        );
-
-        /// <summary>
         /// Closes an open object handle.
         /// </summary>
         /// <param name="hObject">A valid handle to an open object.</param>
@@ -31,25 +17,6 @@ namespace Somno.Native
         [DllImport("kernel32.dll")]
         public static extern bool CloseHandle(
             [In] IntPtr hObject
-        );
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
-        public static extern IntPtr CreateFileMapping(
-            [In]           IntPtr hFile,
-            [In, Optional] nint lpFileMappingAttributes,
-            [In]           uint flProtect,
-            [In]           uint dwMaximumSizeHigh,
-            [In]           uint dwMaximumSizeLow,
-            [In, Optional] string lpName
-        );
-
-        [DllImport("kernel32.dll")]
-        public static extern unsafe void* MapViewOfFile(
-            [In] IntPtr hFileMappingObject,
-            [In] uint dwDesiredAccess,
-            [In] uint dwFileOffsetHigh,
-            [In] uint dwFileOffsetLow,
-            [In] nuint dwNumberOfBytesToMap
         );
 
         /// <summary>
@@ -80,14 +47,6 @@ namespace Somno.Native
             [In] string lpProcName
         );
 
-        /// <summary>
-        /// Frees the loaded dynamic-link library (DLL) module and, if necessary, decrements its reference count. When the reference count reaches zero, the module is unloaded from the address space of the calling process and the handle is no longer valid.
-        /// </summary>
-        /// <param name="hLibModule">A handle to the loaded library module. The LoadLibrary, LoadLibraryEx, GetModuleHandle, or GetModuleHandleEx function returns this handle.</param>
-        /// <returns>If the function succeeds, the return value is nonzero.</returns>
-        [DllImport("kernel32.dll")]
-        public static extern bool FreeLibrary([In] nint hLibModule);
-
         // https://learn.microsoft.com/en-us/windows/console/setconsolectrlhandler?WT.mc_id=DT-MVP-5003978
         /// <summary>
         /// Adds or removes an application-defined HandlerRoutine function from the list of handler functions for the calling process.
@@ -99,6 +58,29 @@ namespace Somno.Native
         public static extern bool SetConsoleCtrlHandler(
             [In, Optional] SetConsoleCtrlEventHandler handler, 
             [In]           bool add
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeviceIoControl(
+            [In]                nint hDevice,
+            [In]                uint dwIoControlCode,
+            [In, Optional]      void* lpInBuffer,
+            [In]                uint nInBufferSize,
+            [Out, Optional]     void* lpOutBuffer,
+            [In]                uint nOutBufferSize,
+            [Out]               out uint lpBytesReturned,
+            [In, Out, Optional] void* lpOverlapped
+        );
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern nint CreateFile(
+            [In]           string lpFileName,
+            [In]           uint dwDesiredAccess,
+            [In]           uint dwShareMode,
+            [In, Optional] nint lpSecurityAttributes,
+            [In]           uint dwCreationDisposition,
+            [In]           uint dwFlagsAndAttributes,
+            [In, Optional] nint hTemplateFile
         );
 
         /// <summary>

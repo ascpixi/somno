@@ -21,6 +21,14 @@ namespace Somno.Native
         public const uint SectionMapExecute = 0x8;
         public const uint SectionExtendSize = 0x10;
 
+        public const uint GenericRead = 0x80000000;
+        public const uint GenericWrite = 0x40000000;
+
+        public const uint FileShareRead = 1;
+        public const uint FileShareWrite = 2;
+
+        public const uint OpenExisting = 3;
+
         public const uint FileMapAllAccess =
             StandardRightsRequired |
             SectionQuery |

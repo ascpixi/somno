@@ -15,8 +15,12 @@ namespace Somno.PortalAgent
     /// </summary>
     internal unsafe class Portal : IDisposable
     {
+        /// <summary>
+        /// The process all portal agent calls will target.
+        /// </summary>
+        public readonly Process TargetProcess;
+
         readonly delegate* unmanaged[Stdcall]<ulong, ulong, ulong, void> communicate;
-        readonly Process targetProcess;
         readonly nint libraryHandle;
 
         const ulong IPCSignature = 0xACE77777DEADDEAD;
@@ -55,7 +59,7 @@ namespace Somno.PortalAgent
         /// <exception cref="InvalidDataException">Thrown when a part of received IPC data is invalid. </exception>
         public Portal(string target)
         {
-            targetProcess = AwaitProcess(target, out var wasAlreadyRunning);
+            TargetProcess = AwaitProcess(target, out var wasAlreadyRunning);
             if (wasAlreadyRunning) {
                 Terminal.LogWarning("The given process was already running when Somno was started.");
                 Terminal.LogWarning("It's recommended to run Somno first, before the target process.");
@@ -120,7 +124,7 @@ namespace Somno.PortalAgent
                 TargetAddress = address,
                 BufferAddress = &response,
                 Size = (byte)sizeof(T),
-                TargetPID = (ulong)targetProcess.Id
+                TargetPID = (ulong)TargetProcess.Id
             };
 
             communicate(IPCSignature, (ulong)Environment.ProcessId, (ulong)&request);

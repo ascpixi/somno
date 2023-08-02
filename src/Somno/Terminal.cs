@@ -46,24 +46,22 @@ namespace Somno
         }
 
         public static void LogInfo(string s)
-        {
-            Display("info", ConsoleColor.Black, ConsoleColor.Gray);
-            Console.Write(' ');
-            Console.WriteLine(s);
-        }
+            => SanitizeAndLog("info", s, ConsoleColor.Black, ConsoleColor.Gray);
 
         public static void LogWarning(string s)
-        {
-            Display("warn", ConsoleColor.Black, ConsoleColor.Yellow);
-            Console.Write(' ');
-            Console.WriteLine(s);
-        }
+            => SanitizeAndLog("warn", s, ConsoleColor.Black, ConsoleColor.Yellow);
 
         public static void LogError(string s)
+            => SanitizeAndLog("err!", s, ConsoleColor.Black, ConsoleColor.Red);
+
+        static void SanitizeAndLog(string prefix, string s, ConsoleColor fg, ConsoleColor bg)
         {
-            Display("err!", ConsoleColor.Black, ConsoleColor.Red);
-            Console.Write(' ');
-            Console.WriteLine(s);
+            string[] lines = s.Split('\n');
+            foreach (var line in lines) {
+                Display(prefix, fg, bg);
+                Console.Write(' ');
+                Console.WriteLine(line);
+            }
         }
     }
 }

@@ -7,25 +7,21 @@ namespace Somno.UI.Engine
 {
     internal class ImGuiInputHandler
     {
-        readonly IntPtr hwnd;
+        readonly WindowHost host;
         ImGuiMouseCursor lastCursor;
 
-        public ImGuiInputHandler(IntPtr hwnd)
+        public ImGuiInputHandler(WindowHost host)
         {
-            this.hwnd = hwnd;
+            this.host = host;
         }
 
         public bool Update()
         {
             var io = ImGui.GetIO();
-            UpdateMousePosition(io, hwnd);
+            UpdateMousePosition(io, host.WindowHandle);
             var mouseCursor = io.MouseDrawCursor ? ImGuiMouseCursor.None : ImGui.GetMouseCursor();
             if (mouseCursor != lastCursor) {
                 lastCursor = mouseCursor;
-
-                // only required if mouse icon changes
-                // while mouse isn't moved otherwise redundent.
-                // so practically it's redundent.
                 UpdateMouseCursor(io, mouseCursor);
             }
 
@@ -113,7 +109,7 @@ namespace Somno.UI.Engine
             }
         }
 
-        private static bool UpdateMouseCursor(ImGuiIOPtr io, ImGuiMouseCursor requestedcursor)
+        private bool UpdateMouseCursor(ImGuiIOPtr io, ImGuiMouseCursor requestedcursor)
         {
             if ((io.ConfigFlags & ImGuiConfigFlags.NoMouseCursorChange) != 0)
                 return false;
@@ -153,7 +149,7 @@ namespace Somno.UI.Engine
                         break;
                 }
 
-                User32.SetCursor(User32.LoadCursor(IntPtr.Zero, cursor));
+                host.SetCursor((ushort)cursor);
             }
 
             return true;

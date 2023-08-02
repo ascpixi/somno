@@ -18,9 +18,10 @@ namespace Somno.Packager
         /// <param name="key">The decryption key to use.</param>
         public static byte[] OpenPackedFile(byte[] bytes, byte[] key)
         {
-            var reversed = bytes.Reverse().ToArray();
-            var decrypted = Decrypt(reversed, key);
-            return Decompress(decrypted);
+            //var reversed = bytes;
+            var decrypted = Decrypt(bytes, key);
+            //return Decompress(decrypted);
+            return decrypted;
         }
 
         /// <summary>
@@ -31,9 +32,9 @@ namespace Somno.Packager
         /// <param name="key">The encryption key to use.</param>
         public static byte[] CreatePackedFile(byte[] bytes, byte[] key)
         {
-            var compressed = Compress(bytes);
-            var encrypted = Encrypt(compressed, key);
-            return encrypted.Reverse().ToArray();
+            //var compressed = Compress(bytes);
+            var encrypted = Encrypt(bytes, key);
+            return encrypted;
         }
 
         static byte[] Decompress(byte[] input)

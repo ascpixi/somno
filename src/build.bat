@@ -31,6 +31,13 @@ cd ..
 
 echo [+] built: Somno.Portal
 
+cd KDMapper
+"%MSBUILD_PATH%" KDMapper.vcxproj /p:Configuration=%1 /p:Platform=x64
+if %errorlevel% neq 0 goto fail
+cd ..
+
+echo [+] built: KDMapper
+
 cd Somno
 dotnet publish -r win-x64 -c %1 /p:RepackagePortalAgent=true /p:RepackageWindowHost=true
 if %errorlevel% neq 0 goto fail

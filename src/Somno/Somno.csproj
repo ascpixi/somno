@@ -46,9 +46,11 @@
         <PropertyGroup>
             <SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
             <ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/win-x64/Somno.ILTransformer.exe</ILTransformerBin>
-        </PropertyGroup>
+			<SomnoAssemblyDir>$(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64</SomnoAssemblyDir>
+			<SomnoBinaryDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64</SomnoBinaryDir>
+		</PropertyGroup>
 
-        <Exec Command="$(ILTransformerBin) $(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64/Somno.dll $(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64"></Exec>
+        <Exec Command="$(ILTransformerBin) $(SomnoAssemblyDir)/Somno.dll $(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64"></Exec>
     </Target>
 
     <Target Name="PackagePortal" Condition="'$(RepackagePortalAgent)'=='true'" BeforeTargets="FindInvalidProjectReferences">

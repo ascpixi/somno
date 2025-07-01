@@ -16,12 +16,13 @@ namespace Somno.PortalAgent
     internal unsafe class Portal : IDisposable
     {
         /// <summary>
-        /// The process all portal agent calls will target.
+        /// The process ID all portal agent calls will target.
         /// </summary>
-        public readonly Process TargetProcess;
+        public int TargetProcessPID;
 
         readonly delegate* unmanaged[Stdcall]<ulong, ulong, ulong, void> communicate;
         readonly nint libraryHandle;
+        readonly object syncRoot = new();
 
         const ulong IPCSignature = 0xACE77777DEADDEAD;
         const string HookedFunctionLibrary = "win32u.dll";
@@ -51,27 +52,13 @@ namespace Somno.PortalAgent
         }
 
         /// <summary>
-        /// Establishes the IPC portal connection. This will inject the
-        /// portal DLL into a vector process that already has an open
-        /// virtual memory R/W handle to the target process.
+        /// Establishes the IPC portal connection. This will start the
+        /// portal agent driver, if it hasn't been already started.
         /// </summary>
-        /// <param name="target">The target process name.</param>
+        /// <param name="targetPID">The target process PID.</param>
         /// <exception cref="InvalidDataException">Thrown when a part of received IPC data is invalid. </exception>
-        public Portal(string target)
+        public Portal()
         {
-            TargetProcess = AwaitProcess(target, out var wasAlreadyRunning);
-            if (wasAlreadyRunning) {
-                Terminal.LogWarning("The given process was already running when Somno was started.");
-                Terminal.LogWarning("It's recommended to run Somno first, before the target process.");
-                Terminal.LogWarning("Press [ENTER] to load the Somno Portal Agent.");
-            }
-            else {
-                Terminal.LogInfo("Process detected. Press [ENTER] to load the Somno Portal Agent.");
-                Terminal.LogInfo("Please note that it is recommended to wait ~5 minutes before loading SPA.");
-            }
-
-            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
-
             libraryHandle = Kernel32.LoadLibrary(HookedFunctionLibrary);
             communicate =
                 (delegate* unmanaged[Stdcall]<ulong, ulong, ulong, void>)
@@ -107,6 +94,29 @@ namespace Somno.PortalAgent
         }
 
         /// <summary>
+        /// Determines whether the target process is currently running.
+        /// </summary>
+        /// <returns><see langword="true"/> if the process with the PID of <see cref="TargetProcessPID"/> is running; <see langword="false"/> otherwise.</returns>
+        public bool IsTargetRunning()
+        {
+            lock(syncRoot) {
+                if (TargetProcessPID == 0) {
+                    throw new InvalidOperationException("The target process PID hasn't been set.");
+                }
+
+                var response = stackalloc byte[1];
+                var request = new PortalCheckPIDRequest() {
+                    PID = (ulong)TargetProcessPID,
+                    OutputAddress = response
+                };
+
+                communicate(IPCSignature, (ulong)Environment.ProcessId, (ulong)&request);
+
+                return response[0] == 1;
+            }
+        }
+
+        /// <summary>
         /// Reads the given structure from the memory of the process
         /// the portal is directed to.
         /// </summary>
@@ -115,20 +125,56 @@ namespace Somno.PortalAgent
         /// <exception cref="InvalidOperationException">Thrown when a type is given, of which the size exceeds the IPC shared memory region.</exception>
         public T ReadProcessMemory<T>(ulong address) where T : unmanaged
         {
-            if(sizeof(T) > byte.MaxValue) {
-                throw new InvalidOperationException("The provided structure is too large.");
+            lock(syncRoot) {
+                if (sizeof(T) > byte.MaxValue) {
+                    throw new InvalidOperationException("The provided structure is too large.");
+                }
+
+                if (TargetProcessPID == 0) {
+                    throw new InvalidOperationException("The target process PID hasn't been set.");
+                }
+
+                // allocate on the heap, stack may be unstable
+                var response = new T[1];
+
+                fixed(T* responsePtr = response) {
+                    var request = new PortalReadMemoryRequest() {
+                        TargetAddress = address,
+                        BufferAddress = responsePtr,
+                        Size = (byte)sizeof(T),
+                        TargetPID = (ulong)TargetProcessPID
+                    };
+
+                    communicate(IPCSignature, (ulong)Environment.ProcessId, (ulong)&request);
+                    return response[0];
+                }
             }
+        }
 
-            T response = default;
-            var request = new PortalReadMemoryRequest() {
-                TargetAddress = address,
-                BufferAddress = &response,
-                Size = (byte)sizeof(T),
-                TargetPID = (ulong)TargetProcess.Id
-            };
+        public void ReadProcessMemory<T>(ulong address, T[] buffer) where T : unmanaged
+        {
+            lock (syncRoot) {
+                int sizeInBytes = sizeof(T) * buffer.Length;
 
-            communicate(IPCSignature, (ulong)Environment.ProcessId, (ulong)&request);
-            return response;
+                if (sizeInBytes > byte.MaxValue) {
+                    throw new InvalidOperationException("The provided buffer is too large.");
+                }
+
+                if (TargetProcessPID == 0) {
+                    throw new InvalidOperationException("The target process PID hasn't been set.");
+                }
+
+                fixed(T* bufferPtr = buffer) {
+                    var request = new PortalReadMemoryRequest() {
+                        TargetAddress = address,
+                        BufferAddress = bufferPtr,
+                        Size = (byte)sizeInBytes,
+                        TargetPID = (ulong)TargetProcessPID
+                    };
+
+                    communicate(IPCSignature, (ulong)Environment.ProcessId, (ulong)&request);
+                }
+            }
         }
 
         /// <summary>

@@ -128,22 +128,34 @@ function_hook_t syspatch_add_prologue(void* target, void* callback, memregion_t*
 		0x52,					// push rdx
 		0x41, 0x50,				// push r8
 		0x41, 0x51,				// push r9
-		// ; Reserve space on the stack.
-		0x48, 0x83, 0xEC, 0x20	// sub rsp, 0x20
+		// ; Align the stack on a 64-byte boundary. Save the RSP to a non-volatile register (RBX).
+		0x53,					// push rbx
+		0x48, 0x89, 0xE3,		// mov rbx, rsp
+		0x48, 0x83, 0xE4, 0xC0, // and rsp, -64
+		// ; Reserve space on the stack, subtracting 64 bytes. Stack remains aligned.
+		0x48, 0x83, 0xEC, 0x40	// sub rsp, 0x40
 	};
 
 	// (...hook memory region starts)
 	uint8_t itmShellcodePre[] = {
 		0x48, 0xB8, ASM_ARRDEF_IMM64,	// mov rax, <callback>
 		0xFF, 0xD0,						// call rax
-		// (RAX will now have the return value of <callback>)
-		0x48, 0x83, 0xC4, 0x20,			// add rsp, 0x20
+		// ; (RAX will now have the return value of <callback>)
+		// ; Restore the previous, possibly unaligned, stack address.  
+		0x48, 0x89, 0xDC,				// mov rsp, rbx
+		// ; We overwrote RBX with the prev. RSP, which we just restored.
+		// ; Restore RBX, as it's non-volatile.
+		0x5B,							// pop rbx
+		// ; Restore all of the other registers.
 		0x41, 0x59,						// pop r9
 		0x41, 0x58,						// pop r8
 		0x5A,							// pop rdx
 		0x59,							// pop rcx
+		// ; Check if the return value of <callback> is 0.
 		0x48, 0x85, 0xC0,				// test rax, rax
+		// ; If not, skip the next instruction.
 		0x75, 0x01,						// jne [rip + 1]
+		// ; If not skipped, return.
 		0xC3,							// ret ; (return if callback returned FALSE)
 	};
 

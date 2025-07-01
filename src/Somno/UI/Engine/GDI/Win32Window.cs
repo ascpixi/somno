@@ -1,37 +1,28 @@
 ﻿using Somno.Native.WinUSER;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace Somno.UI.Engine.GDI
 {
-    internal sealed class Win32Window : IDisposable
+    /// <summary>
+    /// Represents a Windows window.
+    /// </summary>
+    internal sealed class Win32Window
     {
         public IntPtr Handle;
         public Rectangle Dimensions;
 
-        public Win32Window(string wndClass, int width, int height, int x, int y, string title, WindowStyles style, WindowExStyles exStyle)
+        /// <summary>
+        /// Creates a wrapper over the given window.
+        /// </summary>
+        /// <param name="hwnd">The handle of the target window.</param>
+        public Win32Window(nint hwnd)
         {
-            this.Dimensions = new Rectangle(x, y, width, height);
-            this.Handle = User32.CreateWindowEx((int)exStyle, wndClass, title, (int)style,
-                this.Dimensions.X, this.Dimensions.Y, this.Dimensions.Width, this.Dimensions.Height,
-                IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-        }
-
-        public void PumpEvents()
-        {
-            if (User32.PeekMessage(out var msg, IntPtr.Zero, 0, 0, 1)) {
-                User32.TranslateMessage(ref msg);
-                User32.DispatchMessage(ref msg);
-            }
-        }
-
-        public void Dispose()
-        {
-            if (this.Handle != IntPtr.Zero && User32.DestroyWindow(this.Handle)) {
-                this.Handle = IntPtr.Zero;
-            }
-
-            GC.SuppressFinalize(this);
+            Handle = hwnd;
+            
+            User32.GetWindowRect(hwnd, out RECT rect);
+            Dimensions = new Rectangle(rect.Location, rect.Size);
         }
     }
 }

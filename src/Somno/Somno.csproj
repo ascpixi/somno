@@ -15,49 +15,77 @@
         <Deterministic>False</Deterministic>
         <FileAlignment>8192</FileAlignment>
 
-		<PublishTrimmed>true</PublishTrimmed>
+        <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+        <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+        <EventSourceSupport>false</EventSourceSupport>
+        <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <PublishTrimmed>true</PublishTrimmed>
         <PublishAot>true</PublishAot>
-		<InvariantGlobalization>true</InvariantGlobalization>
-		<!--<IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>-->
-		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+        <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<DebugType>none</DebugType>
-	</PropertyGroup>
-	
-	<Target Name="ApplyILTransformations" BeforeTargets="IlcCompile">
-		<PropertyGroup>
-			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
-			<ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/Somno.ILTransformer.exe</ILTransformerBin>
-		</PropertyGroup>
+    <ItemGroup>
+        <DirectPInvoke Include="KDMapper" />
+        <NativeLibrary Include="$(ProjectDir)\..\KDMapper\bin\KDMapper.lib" />
+    </ItemGroup>
 
-		<Exec Command="$(ILTransformerBin) $(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64/Somno.dll $(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64"></Exec>
-	</Target>
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <DebugType>none</DebugType>
+        <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+        <StripSymbols>true</StripSymbols>
+        <DebuggerSupport>false</DebuggerSupport>
+        <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    </PropertyGroup>
+    
+    <Target Name="ApplyILTransformations" BeforeTargets="IlcCompile">
+        <PropertyGroup>
+            <SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+            <ILTransformerBin>$(SolutionDir)/Somno.ILTransformer/bin/$(Configuration)/net7.0/win-x64/Somno.ILTransformer.exe</ILTransformerBin>
+        </PropertyGroup>
 
-	<Target Name="PackagePortal" Condition="'$(RepackagePortalAgent)'=='true'" BeforeTargets="FindInvalidProjectReferences">
+        <Exec Command="$(ILTransformerBin) $(MSBuildProjectDirectory)/obj/$(Configuration)/net7.0/win-x64/Somno.dll $(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64"></Exec>
+    </Target>
+
+    <Target Name="PackagePortal" Condition="'$(RepackagePortalAgent)'=='true'" BeforeTargets="FindInvalidProjectReferences">
+        <PropertyGroup>
+            <SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
+            <PackagerPath>$(SolutionDir)/Somno.Packager/bin/$(Configuration)/net7.0/win-x64/Somno.Packager.exe</PackagerPath>
+            <PortalBinaryPath>$(SolutionDir)/Somno.Portal/bin/Somno.Portal.sys</PortalBinaryPath>
+            <PortalResourcePath Condition="'$(IsIDE)'!='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64/publish/resource/data001.bin</PortalResourcePath>
+            <PortalResourcePath Condition="'$(IsIDE)'=='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/resource/data001.bin</PortalResourcePath>
+        </PropertyGroup>
+
+        <Exec Command="$(PackagerPath) pack d2889fe9933f8341cbc923929fb94761 $(PortalBinaryPath) $(PortalResourcePath)" />
+    </Target>
+
+	<Target Name="PackageWindowHost" Condition="'$(RepackageWindowHost)'=='true'" BeforeTargets="FindInvalidProjectReferences">
 		<PropertyGroup>
 			<SolutionDir>$(MSBuildProjectDirectory)/..</SolutionDir>
 			<PackagerPath>$(SolutionDir)/Somno.Packager/bin/$(Configuration)/net7.0/win-x64/Somno.Packager.exe</PackagerPath>
-			<PortalBinaryPath>$(SolutionDir)/Somno.Portal/x64/$(Configuration)/Somno.Portal.dll</PortalBinaryPath>
-			<PortalResourcePath Condition="'$(IsIDE)'!='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64/publish/resource/data001.bin</PortalResourcePath>
-			<PortalResourcePath Condition="'$(IsIDE)'=='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/resource/data001.bin</PortalResourcePath>
+			<WndHostBinaryPath>$(SolutionDir)/Somno.WindowHost/bin/release/net7.0/win-x64/publish/Somno.WindowHost.exe</WndHostBinaryPath>
+			<WndHostResourcePath Condition="'$(IsIDE)'!='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/win-x64/publish/resource/data002.bin</WndHostResourcePath>
+			<WndHostResourcePath Condition="'$(IsIDE)'=='true'">$(MSBuildProjectDirectory)/bin/$(Configuration)/net7.0/resource/data002.bin</WndHostResourcePath>
 		</PropertyGroup>
 
-		<Exec Command="$(PackagerPath) pack d2889fe9933f8341cbc923929fb94761 $(PortalBinaryPath) $(PortalResourcePath)" />
+		<Exec Command="$(PackagerPath) pack 61429914993d17b0291cac5b4c6d2a30 $(WndHostBinaryPath) $(WndHostResourcePath)" />
 	</Target>
-	
+
 	<ItemGroup>
-	  <ProjectReference Include="..\Lunar\Lunar.csproj" />
-	  <ProjectReference Include="..\Somno.Packager\Somno.Packager.csproj" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <PackageReference Include="ImGui.NET" Version="1.89.5.1" />
-	  <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
-	  <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
-	  <PackageReference Include="Vortice.D3DCompiler" Version="3.2.0" />
-	  <PackageReference Include="Vortice.Direct3D11" Version="3.2.0" />
-	  <PackageReference Include="Vortice.DXGI" Version="3.2.0" />
-	</ItemGroup>
+      <ProjectReference Include="..\Somno.Packager\Somno.Packager.csproj" />
+      <ProjectReference Include="..\Somno.WindowHost\Somno.WindowHost.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="ImGui.NET" Version="1.89.5.1" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+      <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
+      <PackageReference Include="Vortice.D3DCompiler" Version="3.2.0" />
+      <PackageReference Include="Vortice.Direct3D11" Version="3.2.0" />
+      <PackageReference Include="Vortice.DXGI" Version="3.2.0" />
+    </ItemGroup>
 </Project>

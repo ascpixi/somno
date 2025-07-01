@@ -1,27 +1,14 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Somno.Native
 {
     /// <summary>
     /// Exposes functions from the <c>KERNEL32</c> Dynamic-Link Library.
     /// </summary>
-    internal static partial class Kernel32
+    internal unsafe static partial class Kernel32
     {
-        /// <summary>
-        /// Opens an existing local process object.
-        /// </summary>
-        /// <param name="dwDesiredAccess">The access to the process object. This access right is checked against the security descriptor for the process. This parameter can be one or more of the process access rights.</param>
-        /// <param name="bInheritHandle">If this value is TRUE, processes created by this process will inherit the handle. Otherwise, the processes do not inherit this handle.</param>
-        /// <param name="dwProcessId">The identifier of the local process to be opened.</param>
-        /// <returns>If the function succeeds, the return value is an open handle to the specified process.</returns>
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr OpenProcess(
-            [In] ProcessAccessFlags dwDesiredAccess,
-            [In] bool bInheritHandle,
-            [In] uint dwProcessId
-        );
-
         /// <summary>
         /// Closes an open object handle.
         /// </summary>
@@ -32,33 +19,32 @@ namespace Somno.Native
             [In] IntPtr hObject
         );
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
-        public static extern IntPtr CreateFileMapping(
-            [In]           IntPtr hFile,
-            [In, Optional] nint lpFileMappingAttributes,
-            [In]           uint flProtect,
-            [In]           uint dwMaximumSizeHigh,
-            [In]           uint dwMaximumSizeLow,
-            [In, Optional] string lpName
-        );
-
-        [DllImport("kernel32.dll")]
-        public static extern unsafe void* MapViewOfFile(
-            [In] IntPtr hFileMappingObject,
-            [In] uint dwDesiredAccess,
-            [In] uint dwFileOffsetHigh,
-            [In] uint dwFileOffsetLow,
-            [In] nuint dwNumberOfBytesToMap
-        );
-
         /// <summary>
         /// Retrieves a module handle for the specified module. The module must have been loaded by the calling process.
         /// </summary>
         /// <param name="lpModuleName">The name of the loaded module (either a .dll or .exe file). If the file name extension is omitted, the default library extension .dll is appended. The file name string can include a trailing point character (.) to indicate that the module name has no extension. The string does not have to specify a path. When specifying a path, be sure to use backslashes (\), not forward slashes (/). The name is compared (case independently) to the names of modules currently mapped into the address space of the calling process.</param>
         /// <returns>If the function succeeds, the return value is a handle to the specified module.</returns>
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(
-            string? lpModuleName
+        public static extern IntPtr GetModuleHandle(string? lpModuleName);
+
+        /// <summary>
+        /// Loads the specified module into the address space of the calling process. The specified module may cause other modules to be loaded.
+        /// </summary>
+        /// <param name="lpLibFileName">The name of the module. This can be either a library module (a .dll file) or an executable module (an .exe file).</param>
+        /// <returns>If the function succeeds, the return value is a handle to the module.</returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        public static extern nint LoadLibrary([In] string lpLibFileName);
+
+        /// <summary>
+        /// Retrieves the address of an exported function (also known as a procedure) or variable from the specified dynamic-link library (DLL).
+        /// </summary>
+        /// <param name="hModule">A handle to the DLL module that contains the function or variable. The LoadLibrary, LoadLibraryEx, LoadPackagedLibrary, or GetModuleHandle function returns this handle.</param>
+        /// <param name="lpProcName">The function or variable name, or the function's ordinal value. If this parameter is an ordinal value, it must be in the low-order word; the high-order word must be zero.</param>
+        /// <returns>If the function succeeds, the return value is the address of the exported function or variable.</returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        public static extern void* GetProcAddress(
+            [In] nint hModule,
+            [In] string lpProcName
         );
 
         // https://learn.microsoft.com/en-us/windows/console/setconsolectrlhandler?WT.mc_id=DT-MVP-5003978
@@ -72,6 +58,29 @@ namespace Somno.Native
         public static extern bool SetConsoleCtrlHandler(
             [In, Optional] SetConsoleCtrlEventHandler handler, 
             [In]           bool add
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeviceIoControl(
+            [In]                nint hDevice,
+            [In]                uint dwIoControlCode,
+            [In, Optional]      void* lpInBuffer,
+            [In]                uint nInBufferSize,
+            [Out, Optional]     void* lpOutBuffer,
+            [In]                uint nOutBufferSize,
+            [Out]               out uint lpBytesReturned,
+            [In, Out, Optional] void* lpOverlapped
+        );
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern nint CreateFile(
+            [In]           string lpFileName,
+            [In]           uint dwDesiredAccess,
+            [In]           uint dwShareMode,
+            [In, Optional] nint lpSecurityAttributes,
+            [In]           uint dwCreationDisposition,
+            [In]           uint dwFlagsAndAttributes,
+            [In, Optional] nint hTemplateFile
         );
 
         /// <summary>

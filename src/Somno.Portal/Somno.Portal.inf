@@ -1,0 +1,77 @@
+;
+; Somno.Portal.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=Somno.Portal.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+Somno.Portal_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+Somno.Portal.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%Somno.Portal.DeviceDesc%=Somno.Portal_Device, Root\Somno.Portal ; TODO: edit hw-id
+
+[Somno.Portal_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+Somno.Portal.sys
+
+;-------------- Service installation
+[Somno.Portal_Device.NT.Services]
+AddService = Somno.Portal,%SPSVCINST_ASSOCSERVICE%, Somno.Portal_Service_Inst
+
+; -------------- Somno.Portal driver install sections
+[Somno.Portal_Service_Inst]
+DisplayName    = %Somno.Portal.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\Somno.Portal.sys
+
+;
+;--- Somno.Portal_Device Coinstaller installation ------
+;
+
+[Somno.Portal_Device.NT.CoInstallers]
+AddReg=Somno.Portal_Device_CoInstaller_AddReg
+CopyFiles=Somno.Portal_Device_CoInstaller_CopyFiles
+
+[Somno.Portal_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[Somno.Portal_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[Somno.Portal_Device.NT.Wdf]
+KmdfService =  Somno.Portal, Somno.Portal_wdfsect
+[Somno.Portal_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "Somno.Portal Installation Disk"
+Somno.Portal.DeviceDesc = "Somno.Portal Device"
+Somno.Portal.SVCDESC = "Somno.Portal Service"

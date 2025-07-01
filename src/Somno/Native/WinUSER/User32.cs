@@ -9,7 +9,7 @@ namespace Somno.Native.WinUSER
     /// <summary>
     /// Exposes functions from the <c>USER32</c> Dynamic-Link Library.
     /// </summary>
-    internal static class User32
+    internal static partial class User32
     {
         /// <summary>
         /// Registers a window class for subsequent use in calls to the CreateWindow or CreateWindowEx function.
@@ -21,33 +21,15 @@ namespace Somno.Native.WinUSER
             [In] ref WndClassEx lpwcx
         );
 
-        /// <summary>
-        /// Unregisters a window class, freeing the memory required for the class.
-        /// </summary>
-        /// <param name="lpClassName">A null-terminated string or a class atom. If lpClassName is a string, it specifies the window class name. This class name must have been registered by a previous call to the RegisterClass or RegisterClassEx function. System classes, such as dialog box controls, cannot be unregistered. If this parameter is an atom, it must be a class atom created by a previous call to the RegisterClass or RegisterClassEx function. The atom must be in the low-order word of lpClassName; the high-order word must be zero.</param>
-        /// <param name="hInstance">A handle to the instance of the module that created the class.</param>
-        /// <returns>If the function succeeds, the return value is nonzero.</returns>
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern bool UnregisterClass(
-            string lpClassName,
-            IntPtr hInstance
-        );
-
-        /// <summary>
-        /// Calls the default window procedure to provide default processing for any window messages that an application does not process. This function ensures that every message is processed. DefWindowProc is called with the same parameters received by the window procedure.
-        /// </summary>
-        /// <param name="hWnd">A handle to the window procedure that received the message.</param>
-        /// <param name="msg">The message</param>
-        /// <param name="wParam">Additional message information. The content of this parameter depends on the value of the Msg parameter.</param>
-        /// <param name="lParam">Additional message information</param>
-        /// <returns>The return value is the result of the message processing and depends on the message.</returns>
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern IntPtr DefWindowProc(
-            IntPtr hWnd,
-            uint msg,
-            UIntPtr wParam,
-            IntPtr lParam
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPos(
+            nint hwnd,
+            nint hwndPlaceAfter,
+            int x,
+            int y,
+            int width,
+            int height,
+            uint flags
         );
 
         /// <summary>
@@ -75,23 +57,13 @@ namespace Somno.Native.WinUSER
             return LoadCursor(hInstance, new IntPtr((int)cursor));
         }
 
-        /// <summary>
-        /// Dispatches incoming nonqueued messages, checks the thread message queue for a posted message, and retrieves the message (if any exist).
-        /// </summary>
-        /// <param name="lpMsg">A pointer to an MSG structure that receives message information.</param>
-        /// <param name="hWnd">A handle to the window whose messages are to be retrieved. The window must belong to the current thread.</param>
-        /// <param name="wMsgFilterMin">The value of the first message in the range of messages to be examined. Use WM_KEYFIRST (0x0100) to specify the first keyboard message or WM_MOUSEFIRST (0x0200) to specify the first mouse message</param>
-        /// <param name="wMsgFilterMax">The value of the last message in the range of messages to be examined. Use WM_KEYLAST to specify the last keyboard message or WM_MOUSELAST to specify the last mouse message</param>
-        /// <param name="wRemoveMsg">Specifies how messages are to be handled</param>
-        /// <returns>If a message is available, the return value is nonzero.</returns>
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "PeekMessageW")]
-        public static extern bool PeekMessage(
+
+        [DllImport("user32.dll")]
+        public static extern int GetMessage(
             out WndMessage lpMsg,
             IntPtr hWnd,
             uint wMsgFilterMin,
-            uint wMsgFilterMax,
-            uint wRemoveMsg
+            uint wMsgFilterMax
         );
 
         /// <summary>
@@ -194,7 +166,7 @@ namespace Somno.Native.WinUSER
         /// <param name="instance">A handle to the instance of the module to be associated with the window</param>
         /// <param name="pvParam">Pointer to a value to be passed to the window through the CREATESTRUCT structure (lpCreateParams member) pointed to by the lParam param of the WM_CREATE message. This message is sent to the created window by this function before it returns</param>
         /// <returns>If the function succeeds, the return value is a handle to the new window</returns>
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr CreateWindowEx(
             int exStyle,
             string className,
@@ -249,8 +221,9 @@ namespace Somno.Native.WinUSER
         );
 
         [DllImport("user32.dll")]
-        public static extern IntPtr SetFocus(
-            IntPtr hWnd
+        public static extern void SwitchToThisWindow(
+            [In] nint hwnd,
+            [In] bool fUnknown
         );
 
         [DllImport("user32.dll")]
@@ -265,13 +238,30 @@ namespace Somno.Native.WinUSER
 
         [DllImport("user32.dll", ExactSpelling = true)]
         public static extern int GetSystemMetrics(
-            int smIndex
+            SystemMetricsIndex smIndex
         );
 
         [DllImport("user32.dll", ExactSpelling = true)]
-        public static extern bool SetWindowDisplayAffinity(
-          [In] IntPtr hWnd,
-          [In] uint dwAffinity
+        public static extern bool GetWindowRect(
+            [In] nint hWnd,
+            [Out] out RECT lpRect
         );
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
     }
 }

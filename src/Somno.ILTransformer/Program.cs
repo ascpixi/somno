@@ -21,7 +21,10 @@ namespace Somno.ILTransformer
 
             File.Copy(path, workDllPath);
 
-            var module = ModuleDefinition.ReadModule(workDllPath);
+            var module = ModuleDefinition.ReadModule(workDllPath, new() {
+                AssemblyResolver = new NuGetAssemblyResolver()
+            });
+
             transform(module);
 
             File.Delete(path);

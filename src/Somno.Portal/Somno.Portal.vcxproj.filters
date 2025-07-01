@@ -3,46 +3,50 @@
   <ItemGroup>
     <Filter Include="src">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\strcrypt.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ipc.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\logging.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\winwrapper.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\memio.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\threading.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stealthsleep.h">
-      <Filter>src</Filter>
-    </ClInclude>
+    <None Include="Somno.Portal.inf" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\portal.cpp">
+    <ClCompile Include="src\asm.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\winwrapper.cpp">
+    <ClCompile Include="src\main.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memory.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\syspatch.c">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\memio.asm">
+    <ClInclude Include="src\asm.h">
       <Filter>src</Filter>
-    </MASM>
-    <MASM Include="src\stealthsleep.asm">
+    </ClInclude>
+    <ClInclude Include="src\inttypes.h">
       <Filter>src</Filter>
-    </MASM>
+    </ClInclude>
+    <ClInclude Include="src\ipc.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logging.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\memory.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\safety.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\syspatch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,12 +1,21 @@
 #pragma once
 
 #include <ntddk.h>
+#include "inttypes.h"
 
 typedef struct memregion {
 	PMDL mdl;
 	void* base;
 	void* alloc_base;
 } memregion_t;
+
+/// <summary>
+/// Determines whether a given value is a valid user-mode address.
+/// This function does not perform any paging checks.
+/// </summary>
+/// <param name="ptr">The raw pointer value to check.</param>
+/// <returns>TRUE if the address is in the address range of user-mode processes and isn't NULL; FALSE otherwise.</returns>
+BOOLEAN mem_usermode_addr_valid(uint64_t ptr);
 
 /// <summary>
 /// Allocates a read-write-execute region of memory.

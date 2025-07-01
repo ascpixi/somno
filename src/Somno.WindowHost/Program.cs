@@ -29,37 +29,43 @@ namespace Somno.WindowHost
 
             pipeName = Vigenere.Decipher(args[0].Trim(), VigenerePipeNameKey);
 
-            try {
-                Initialize();
-            } catch (Exception ex) {
 #if DEBUG
+            try {
+#endif
+                Initialize();
+#if DEBUG
+            }
+            catch (Exception ex) {
                 User32.MessageBox(
                     0,
                     $"Could not initialize the window host.\n\n{ex.GetType().FullName}\n{ex.Message}\n\nstacktrace:\n{ex.StackTrace}",
                     "Somno Window Host",
                     MessageBoxFlags.OK | MessageBoxFlags.Error
                 );
-#endif
                 return;
             }
+#endif
 
+#if DEBUG
             try {
+#endif
                 while (User32.GetMessage(out WindowMessage msg, hwnd, 0, 0)) {
                     User32.TranslateMessage(ref msg);
                     User32.DispatchMessage(ref msg);
                 }
-            } catch (Exception ex) {
 #if DEBUG
+            }
+            catch (Exception ex) {
                 User32.MessageBox(
                     0,
                     $"An exception occured in the message pump.\n\n{ex.GetType().FullName}\n{ex.Message}\n\nat\n{ex.StackTrace}",
                     "Somno Window Host",
                     MessageBoxFlags.OK | MessageBoxFlags.Error
                 );
-#endif
 
                 return;
             }
+#endif
         }
 
         static unsafe void Initialize()

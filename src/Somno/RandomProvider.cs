@@ -6,20 +6,11 @@ using System.Threading.Tasks;
 
 namespace Somno
 {
+    /// <summary>
+    /// Provides extended random object generation methods.
+    /// </summary>
     internal static class RandomProvider
     {
-        public static string GenerateSentence(int words)
-        {
-            var sb = new StringBuilder();
-            var rand = new Random();
-
-            for (int i = 0; i < words; i++) {
-                sb.Append(GenerateWord(rand.Next(5, 7)));
-            }
-
-            return sb.ToString();
-        }
-
         public static string GenerateWord(int length)
         {
             var rand = new Random();

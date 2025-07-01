@@ -1,132 +1,90 @@
 ﻿using Somno.Evasion;
 using Somno.Native;
 using System;
-using System.Diagnostics;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Somno.UI;
 using System.Threading;
-using System.Reflection;
-using System.Linq;
-using Somno.Packager;
 using System.IO;
 using Somno.PortalAgent;
-using System.Globalization;
-using System.Collections.Generic;
 using Somno.Native.WinUSER;
 using Somno.Game.Modifications;
+using Somno.Game;
+using System.Runtime.CompilerServices;
 
 namespace Somno
 {
-    [SupportedOSPlatform("Windows")]
     internal class SomnoMain
     {
-        static bool terminating = false;
-
-        public static Portal? MainPortal { get; private set; }
+        public static Portal? MainPortal;
         public static bool ConsoleVisible { get; private set; } = true;
 
-        public static ESPModification? ESP;
-        public static TrajectoriesModification? Trajectories;
-        public static WaypointsModification? Waypoints;
+        public const string TargetProcessName = "csgo.exe";
 
-        static void Main(string[] args)
+        static void RegisterAllModifications()
         {
-            //GenuineCheck.VerifyGenuine();
+            ModEngine.AddModification(new ESPModification());
+            ModEngine.AddModification(new WaypointsModification());
+            ModEngine.AddModification(new ExtraCrosshairModification());
+            ModEngine.AddModification(new RecoilCrosshairModification());
+            ModEngine.AddModification(new GameInfoModification());
+            ModEngine.AddModification(new RearviewModification());
+        }
+
+        static void Main()
+        {
+            GenuineCheck.VerifyGenuine();
             SafetyCheck.CheckForIncompatibleSoftware();
 
             Kernel32.SetConsoleCtrlHandler(ConsoleExitHandler, true);
             AppDomain.CurrentDomain.ProcessExit += (s, e) => Exit(false);
 
             Console.Title = "Somno";
-
             Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+            if (!Directory.Exists("config")) {
+                var dir = Directory.CreateDirectory("config");
+                dir.Attributes |= FileAttributes.NotContentIndexed;
+            }
 
             Console.Clear();
             Terminal.Header("Somno Console v1.0.0", ConsoleColor.Black, ConsoleColor.DarkRed);
 
+            Terminal.LogInfo("Establishing portal connection.");
+            MainPortal = new Portal();
+
+            Terminal.LogInfo("Starting overlay...");
             SomnoOverlay.Instance = new();
             SomnoOverlay.Instance.Start().ContinueWith(
                 GUIExceptionHandler,
                 TaskContinuationOptions.OnlyOnFaulted
             );
 
+#if !DEBUG
+            Terminal.LogInfo("Cleaning the USN journal...");
             USNJournal.Erase(@"\\.\C:");
             USNJournal.Fill(1000);
+#endif
 
             ConfigurationGUI.Create();
 
-            ESP = new ESPModification();
-            ConfigurationGUI.Instance!.Modules.Add(ESP);
-            SomnoOverlay.Instance.Modules.Add(ESP);
-
-            Trajectories = new TrajectoriesModification();
-            ConfigurationGUI.Instance!.Modules.Add(Trajectories);
-            SomnoOverlay.Instance.Modules.Add(Trajectories);
-
-            Waypoints = new WaypointsModification();
-            ConfigurationGUI.Instance!.Modules.Add(Waypoints);
-            SomnoOverlay.Instance.Modules.Add(Waypoints);
-
             Terminal.LogInfo("Somno was successfully initialized.");
+
+            Orchestrator.Start();
+
+            RegisterAllModifications();
 
             HideConsole();
             MessagePump();
-
-            //Portal.EstablishConnection("ConsoleApp22");
-            //uint secret = Portal.ReadProcessMemory<uint>(0x7FFB8F10D380);
-
-            //string? stdinBuffer;
-            //ulong targetAddr;
-
-            //do {
-            //    Console.Write("Address to read: 0x");
-            //    stdinBuffer = Console.ReadLine();
-            //} while (
-            //    stdinBuffer == null ||
-            //    !ulong.TryParse(stdinBuffer, NumberStyles.HexNumber, null, out targetAddr)
-            //);
-
-            //string targetProcess;
-
-            //while (true) {
-            //    Console.Write("Target process name: ");
-            //    stdinBuffer = Console.ReadLine();
-            //    if (stdinBuffer == null)
-            //        continue;
-
-            //    targetProcess = stdinBuffer;
-            //    break;
-            //}
-
-            //mainPortal = new Portal(targetProcess);
-            //byte secret = mainPortal.ReadProcessMemory<byte>(targetAddr);
-            //Console.WriteLine($"Done. Value = {secret} (0x{secret:X2})");
-
-            //Console.WriteLine("Press any key to try again...");
-            //Console.ReadLine();
-
-            //byte secret2 = mainPortal.ReadProcessMemory<byte>(targetAddr);
-            //Console.WriteLine($"Done. Value = {secret2} (0x{secret2:X2})");
-
-            //Console.WriteLine("Press any key to close...");
-            //Console.ReadLine();
-            //mainPortal.Close();
-            //Console.WriteLine("Closed.");
-            //Console.ReadLine();
-
-            //while (true) {
-            //    Terminal.LogInfo(mainPortal.ToString());
-            //    Thread.Sleep(500);
-            //}
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void HideConsole()
         {
             User32.ShowWindow(User32.GetConsoleWindow(), ShowWindowCommand.Hide);
             ConsoleVisible = false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ShowConsole()
         {
             User32.ShowWindow(User32.GetConsoleWindow(), ShowWindowCommand.Show);
@@ -135,7 +93,7 @@ namespace Somno
 
         static void MessagePump()
         {
-            while (!terminating) {
+            while (!Orchestrator.IsTerminating) {
                 var result = User32.GetMessage(out var message, IntPtr.Zero, 0, 0);
                 
                 if (result <= 0) {
@@ -168,8 +126,8 @@ namespace Somno
 
         static void Exit(bool shouldManuallyTerminate)
         {
-            if(terminating) return;
-            terminating = true;
+            if(Orchestrator.IsTerminating) return;
+            Orchestrator.ChangeState(EngineState.Terminating);
 
             ShowConsole();
 
@@ -199,6 +157,7 @@ namespace Somno
                 Console.ReadLine();
             }
 
+#if !DEBUG
             try {
                 USNJournal.Erase(@"\\.\C:");
                 USNJournal.Fill(1000);
@@ -209,10 +168,15 @@ namespace Somno
                 if (ex.StackTrace != null)
                     Terminal.LogError(ex.StackTrace);
             }
+#endif
 
             Terminal.LogInfo(@"See you later! \(^ω^)");
 
-            Thread.Sleep(2000);
+            Orchestrator.ChangeState(EngineState.Terminated);
+
+#if !DEBUG
+            Thread.Sleep(1000);
+#endif
 
             if(shouldManuallyTerminate) {
                 Environment.Exit(0);

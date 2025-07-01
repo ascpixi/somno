@@ -10,6 +10,13 @@ namespace Somno.LanguageExtensions
 {
     internal static class BinaryRWExtensions
     {
+        public static unsafe T Read<T>(this Stream self) where T : unmanaged
+        {
+            byte* buffer = stackalloc byte[sizeof(T)];
+            self.Read(new Span<byte>(buffer, sizeof(T)));
+            return *(T*)buffer;
+        }
+
         public static void Write(this BinaryWriter self, Vector2 vec2)
         {
             self.Write(vec2.X);

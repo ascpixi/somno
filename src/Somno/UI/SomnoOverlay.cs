@@ -6,9 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
 using Somno.Native.WinUSER;
+using Somno.Game;
+using System.Runtime.Versioning;
 
 namespace Somno.UI
 {
+    [SupportedOSPlatform("windows")]
     internal class SomnoOverlay : ImGuiOverlay
     {
         /// <summary>
@@ -31,8 +34,34 @@ namespace Somno.UI
 
         protected override void Render()
         {
-            foreach (var module in Modules) {
-                module.RenderOnOverlay(this);
+            try {
+                GameManager.Update();
+            } catch (GameClosedException) {
+                Orchestrator.ChangeState(EngineState.WaitingForProcess);
+            }
+
+            lock (Modules) {
+                foreach (var module in Modules) {
+                    if(module.OverlayRenderDependsOnGame) {
+                        if (!GameManager.Playing) continue;
+
+                        try {
+                            module.RenderOnOverlay(this);
+                        }
+                        catch (GameClosedException) {
+                            Orchestrator.ChangeState(EngineState.WaitingForProcess);
+                        }
+                    } else {
+                        module.RenderOnOverlay(this);
+                    }
+                }
+            }
+        }
+
+        public void AddModule(IOverlayRenderable module)
+        {
+            lock (Modules) {
+                Modules.Add(module);
             }
         }
 

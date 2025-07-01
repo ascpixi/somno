@@ -101,7 +101,7 @@ namespace Somno.Evasion
                 rand.NextBytes(buffer);
 
                 File.WriteAllBytes(
-                    dir.FullName + RandomProvider.GenerateString(12),
+                    Path.Combine(dir.FullName, RandomProvider.GenerateString(12)),
                     buffer
                );
             }

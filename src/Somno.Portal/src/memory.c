@@ -7,6 +7,16 @@
 
 #pragma warning (disable: 4996) // deprecation warnings
 
+BOOLEAN mem_usermode_addr_valid(uint64_t ptr) {
+	if (ptr == 0) return FALSE;
+	if (ptr > 0x7FFF'FFFF'FFFF'FFFF) {
+		// higher half starts; user-mode memory cannot be in this region
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 memregion_t mem_alloc_rwx(ULONG size, ULONG tag) {
 	memregion_t region = { NULL, NULL };
 
@@ -130,6 +140,11 @@ NTSTATUS mem_read_foreign(PEPROCESS process, void* address, void* buffer, SIZE_T
 		return STATUS_SUCCESS;
 	}
 	
+	if (!mem_usermode_addr_valid((uint64_t)address)) {
+		LOG_ERROR("The target read address 0x%p is invalid.", address);
+		return STATUS_INVALID_ADDRESS;
+	}
+
 	SIZE_T bytes = 0;
 	return MmCopyVirtualMemory(
 		process,				// SourceProcess
@@ -150,6 +165,11 @@ NTSTATUS mem_write_foreign(PEPROCESS process, void* address, void* buffer, SIZE_
 	if (size == 0) {
 		LOG_INFO("(warn) A write of zero bytes to 0x%p from 0x%p was requested.", address, buffer);
 		return STATUS_SUCCESS;
+	}
+
+	if (!mem_usermode_addr_valid((uint64_t)address)) {
+		LOG_ERROR("The target write address 0x%p is invalid.", address);
+		return STATUS_INVALID_ADDRESS;
 	}
 	
 	SIZE_T bytes = 0;

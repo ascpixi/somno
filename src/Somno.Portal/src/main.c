@@ -194,7 +194,8 @@ BOOLEAN mainCallback(ULONG_PTR one, ULONG_PTR two, ULONG_PTR three) {
 		// If we didn't receive the signature magic number, continue with
 		// the call as usual.
 		return TRUE;
-	} except(eh_report_exception(GetExceptionInformation(), one, two, three)) {
+	}
+	except(eh_report_exception(GetExceptionInformation(), one, two, three)) {
 		LOG_ERROR("(end of exception)");
 		return FALSE;
 	}

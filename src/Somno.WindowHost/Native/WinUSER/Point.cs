@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
-namespace Somno.WindowHost.Native.WinUSER
+namespace Somno.WindowHost.Native.WinUSER;
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct Point
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct Point
-    {
-        public int X;
-        public int Y;
-    }
+    public int X;
+    public int Y;
 }

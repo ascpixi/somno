@@ -55,27 +55,39 @@ uint32_t asm_get_instruction_size(uint8_t* inst) {
 
 			if (type == 0b00 || type == 0b11) return opOffset + 2; // (REX?) + MOV + /r
 			else if (type == 0b01) {
-				if (dest == MOD_RSP || dest == MOD_R12)
+				if (dest == MOD_RSP || dest == MOD_R12) {
 					return opOffset + 3 + 1; // (REX?) + MOV + SIB + /r + disp8
-				else
+				}
+				else {
 					return opOffset + 2 + 1; // (REX?) + MOV + /r + disp8
+				}
 			}
 			else {
-				if (dest == MOD_RSP || dest == MOD_R12)
+				if (dest == MOD_RSP || dest == MOD_R12) {
 					return opOffset + 3 + 4; // (REX?) + MOV + SIB + /r + disp32
-				else
+				}
+				else {
 					return opOffset + 2 + 4; // (REX?) + MOV + /r + disp32
+				}
 			}
 		}
 		case 0x81: /* SUB (?), imm32 */ {
 			uint8_t type = MODRM_MOD(inst[1]);
-			if (type == 0b00 || type == 0b11) return opOffset + 2 + 4; // (REX?) + SUB + /r + imm32
-			else return 0; // TODO: non-direct operand for SUB m, imm32
+			if (type == 0b00 || type == 0b11) {
+				return opOffset + 2 + 4; // (REX?) + SUB + /r + imm32
+			}
+			else {
+				return 0; // TODO: non-direct operand for SUB m, imm32
+			}
 		}
 		case 0x83: /* SUB (?), imm8 */ {
 			uint8_t type = MODRM_MOD(inst[1]);
-			if (type == 0b00 || type == 0b11) return opOffset + 2 + 1; // (REX?) + SUB + /r + imm32
-			else return 0; // TODO: non-direct operand for SUB m, imm8
+			if (type == 0b00 || type == 0b11) {
+				return opOffset + 2 + 1; // (REX?) + SUB + /r + imm32
+			}
+			else {
+				return 0; // TODO: non-direct operand for SUB m, imm8
+			}
 		}
 		case 0x33: /* XOR r64|r32|r16, r/m64|r/m32|r/m16 */ {
 			return opOffset + 2; // (REX?) + XOR + MOD.RM

@@ -23,25 +23,24 @@ namespace Somno.UI
     /// </summary>
     internal class WindowHost : IDisposable
     {
-        bool changeCursor;
-        ushort cursorResource;
-        bool hiddenFromScreenCapture;
-        PipeResponse affinityFlag;
-
-        const string VigenerePipeNameKey = "VBGNSJVAUQZMZPOAIJHU";
-
         /// <summary>
         /// The handle of the host window.
         /// </summary>
         public readonly nint WindowHandle;
 
+        const string VigenerePipeNameKey = "VBGNSJVAUQZMZPOAIJHU";
+
+        bool running;
+        bool changeCursor;
+        ushort cursorResource;
+        bool hiddenFromScreenCapture;
+        PipeResponse affinityFlag;
         readonly string executableDirectory;
         readonly Process hostProcess;
         readonly NamedPipeServerStream pipeServer;
         readonly HostWndProc callbackWndProc;
         readonly CancellationTokenSource cancelSrc;
         readonly Task? listenTask;
-        bool running;
 
         public delegate (nint, bool) HostWndProc(nint hwnd, uint msg, nuint wParam, nint lParam);
 
@@ -60,7 +59,7 @@ namespace Somno.UI
                 RandomProvider.GenerateWord(Random.Shared.Next(5, 8))
             );
 
-            var processName = RandomProvider.GenerateWord(Random.Shared.Next(6, 12));
+            var processName = RandomProvider.GenerateWord(Random.Shared.Next(6, 8));
 
             var executablePath = Path.Combine(
                 executableDirectory,

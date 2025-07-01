@@ -83,6 +83,36 @@ namespace Somno.Native
             [In, Optional] nint hTemplateFile
         );
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr CreateToolhelp32Snapshot(
+            TH32SnapshotFlags dwFlags,
+            uint th32ProcessID
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern bool Process32First(
+            IntPtr hSnapshot,
+            ref ProcessEntry32 lppe
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern bool Module32First(
+            IntPtr hSnapshot,
+            ref ModuleEntry32 lppe
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern bool Process32Next(
+            IntPtr hSnapshot,
+            ref ProcessEntry32 lppe
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern bool Module32Next(
+            IntPtr hSnapshot,
+            ref ModuleEntry32 lppe
+        );
+
         /// <summary>
         /// An application-defined function used with the SetConsoleCtrlHandler function. A console process uses this function to handle control signals received by the process. When the signal is received, the system creates a new thread in the process to execute the function.
         /// </summary>

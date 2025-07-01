@@ -275,6 +275,7 @@ namespace Somno.UI.Engine
             int y = Random.Shared.Next(OverlayMarginMin, OverlayMarginMax);
             int width = screenWidth - x - Random.Shared.Next(OverlayMarginMin, OverlayMarginMax);
             int height = screenHeight - y - Random.Shared.Next(OverlayMarginMin, OverlayMarginMax);
+            HostWindow.Dimensions = new(x, y, width, height);
 
             User32.ShowWindow(HostWindow.Handle, ShowWindowCommand.ShowMaximized);
             User32.SetWindowPos(

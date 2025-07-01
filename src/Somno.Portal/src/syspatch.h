@@ -36,7 +36,8 @@ void* syspatch_get_module_export(const char* moduleName, const char* routineName
 /// in one native register slot.
 /// 
 /// The callback function MUST return a BOOLEAN - if the function returns
-/// FALSE, the original code of the hooked function is not executed.
+/// FALSE, the original code of the hooked function is not executed. If the
+/// function signature specifies a return value, a value of 0 is always returned.
 /// </summary>
 /// <param name="target">- A pointer to the function to hook into.</param>
 /// <param name="callback">- The function to call before each call to the target function.</param>

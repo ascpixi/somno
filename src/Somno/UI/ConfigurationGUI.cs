@@ -11,17 +11,20 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Somno.LanguageExtensions;
+using Somno.Game;
 
 namespace Somno.UI
 {
-    [SupportedOSPlatform("windows")]
     internal class ConfigurationGUI : IOverlayRenderable
     {
-        nint kbHookId;
+        readonly nint kbHookId;
+
         bool hidden = false;
         bool hideFromScreenCapture;
         bool firstFrame = true;
         bool showStyleEditor = false;
+
+        public bool OverlayRenderDependsOnGame => false;
 
         /// <summary>
         /// The configuration modules that render to the overlay.
@@ -49,7 +52,14 @@ namespace Somno.UI
                 throw new InvalidOperationException("The main overlay hasn't been initialized yet.");
 
             Instance = new();
-            SomnoOverlay.Instance.Modules.Add(Instance);
+            SomnoOverlay.Instance.AddModule(Instance);
+        }
+
+        public void AddConfigurable(IConfigRenderable module)
+        {
+            lock (Modules) {
+                Modules.Add(module);
+            }
         }
 
         static IntPtr KeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
@@ -59,12 +69,6 @@ namespace Somno.UI
 
                 if (vkCode == 0x24) { // HOME
                     Instance!.hidden = !Instance.hidden;
-                    if (!Instance.hidden) {
-                        User32.SwitchToThisWindow(
-                            SomnoOverlay.Instance!.Host.WindowHandle,
-                            false
-                        );
-                    }
                 }
             }
 
@@ -92,8 +96,8 @@ namespace Somno.UI
             }
 
             ImGui.SetCursorPosX(prevPos);
-            ImGui.SameLine(8);
 
+            ImGui.SameLine(8);
             ImGui.Checkbox("Hide from screen capture", ref hideFromScreenCapture);
 
             if (hideFromScreenCapture)
@@ -101,18 +105,26 @@ namespace Somno.UI
             else
                 overlay.Host.ShowOnScreenCapture();
 
-            bool cantExit = SomnoMain.MainPortal != null &&
-                !SomnoMain.MainPortal.TargetProcess.HasExited;
-
-            if (cantExit) {
-                ImGui.BeginDisabled(true);
-            }
+            if (GameManager.Running) ImGui.BeginDisabled(true);
 
             if (ImGui.Button("Eject")) {
                 SomnoMain.Exit();
             }
-            ImGui.SameLine();
 
+            if (GameManager.Running) {
+                if (ImGui.IsItemHovered())
+                    ImGui.SetTooltip("You cannot eject Somno because the game is running. Close it, alongside any launchers, in order to safely eject.");
+
+                ImGui.EndDisabled();
+
+                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
+                if (ImGui.Button("Force Eject"))
+                    SomnoMain.Exit();
+                ImGui.PopStyleColor();
+            }
+
+            ImGui.SameLine();
             if (SomnoMain.ConsoleVisible) {
                 if (ImGui.Button("Hide Console")) {
                     SomnoMain.HideConsole();
@@ -123,20 +135,20 @@ namespace Somno.UI
                 }
             }
 
-            if (cantExit) {
-                if(ImGui.IsItemHovered()) {
-                    ImGui.SetTooltip("You cannot eject Somno because the game is running. Close it, alongside any launchers, in order to safely eject.");
-                }
-
-                ImGui.EndDisabled();
-            }
-
             ImGui.SameLine();
             if(ImGui.Button("Theme Editor")) {
                 showStyleEditor = true;
             }
 
-            if(showStyleEditor) {
+            if (!GameManager.Running) {
+                ImGui.Text("Waiting for the game process to start...");
+            } else if (!GameManager.ConnectedToServer) {
+                ImGui.Text("Waiting for a match to start...");
+            } else if (!GameManager.PlayerSpawned) {
+                ImGui.Text("Awaiting player spawn...");
+            }
+
+            if (showStyleEditor) {
                 ImGui.Begin("Theme Editor", ImGuiWindowFlags.NoMove);
                 ImGui.SetWindowSize(new(500, overlay.HostWindow.Dimensions.Height));
                 ImGui.SetWindowPos(new(overlay.HostWindow.Dimensions.Width - 500, 0));
@@ -161,13 +173,13 @@ namespace Somno.UI
 
         static void SaveStyle()
         {
-            File.WriteAllBytes("theme.dat", ImGuiStyleSerialization.Save());
+            File.WriteAllBytes("./config/theme.dat", ImGuiStyleSerialization.Save());
         }
 
         static void LoadStyle()
         {
-            if (File.Exists("theme.dat")) {
-                var bytes = File.ReadAllBytes("theme.dat");
+            if (File.Exists("./config/theme.dat")) {
+                var bytes = File.ReadAllBytes("./config/theme.dat");
                 ImGuiStyleSerialization.Load(bytes);
             }
         }

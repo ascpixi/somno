@@ -6,8 +6,21 @@ using System.Threading.Tasks;
 
 namespace Somno
 {
+    /// <summary>
+    /// Provides methods to patch the bytes of a given binary file.
+    /// </summary>
     internal static class BytePatch
     {
+        /// <summary>
+        /// Replaces all instances of the string <paramref name="searchFor"/> with
+        /// <paramref name="replaceWith"/>. The strings must not contain characters
+        /// outside the standard ASCII range. The length of <paramref name="replaceWith"/>
+        /// cannot exceed the length of <paramref name="searchFor"/>.
+        /// </summary>
+        /// <param name="bytes">The bytes to operate on. This array will be written to.</param>
+        /// <param name="searchFor">The ASCII character sequence to search for. Must be greater or equal in length to <paramref name="searchFor"/>.</param>
+        /// <param name="replaceWith">The ASCII characters to replace the found strings with. Must be lesser or equal in length to <paramref name="replaceWith"/>.</param>
+        /// <exception cref="ArgumentException">Thrown when the length of one of the parameters is invalid.</exception>
         public static void Patch(byte[] bytes, string searchFor, string replaceWith)
         {
             if(searchFor.Length < replaceWith.Length) {

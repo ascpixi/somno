@@ -21,7 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KDMapper", "KDMapper\kdmapp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Somno.Portal", "Somno.Portal\Somno.Portal.vcxproj", "{A1B5D14C-A33F-45CD-934F-2D7542609D17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Somno.WindowHost", "Somno.WindowHost\Somno.WindowHost.csproj", "{0D38DDAB-9471-4424-81AB-8C26617615F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Somno.WindowHost", "Somno.WindowHost\Somno.WindowHost.csproj", "{0D38DDAB-9471-4424-81AB-8C26617615F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

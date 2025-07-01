@@ -22,6 +22,9 @@
     <ClCompile Include="src\syspatch.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\error_handling.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\asm.h">
@@ -46,6 +49,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\windows.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\error_handling.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

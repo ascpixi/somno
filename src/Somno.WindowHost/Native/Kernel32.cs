@@ -13,10 +13,5 @@ namespace Somno.WindowHost.Native
         public static extern nint GetModuleHandle(
             [In, Optional] string? lpModuleName
         );
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        public static extern void OutputDebugString(
-            [In, Optional] string lpOutputString
-        );
     }
 }

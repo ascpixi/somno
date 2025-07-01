@@ -104,6 +104,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ErrorReporting>None</ErrorReporting>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -124,6 +125,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ErrorReporting>None</ErrorReporting>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -149,12 +151,14 @@
     <None Include="Somno.Portal.inf" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\error_handling.c" />
     <ClCompile Include="src\asm.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\memory.c" />
     <ClCompile Include="src\syspatch.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\error_handling.h" />
     <ClInclude Include="src\asm.h" />
     <ClInclude Include="src\inttypes.h" />
     <ClInclude Include="src\ipc.h" />

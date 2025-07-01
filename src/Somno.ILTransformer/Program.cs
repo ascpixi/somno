@@ -1,36 +1,35 @@
 ﻿using Mono.Cecil;
 
-namespace Somno.ILTransformer
+namespace Somno.ILTransformer;
+
+internal class Program
 {
-    internal class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            // Transform the given module itself
-            PerformTransform(args[0], module => {
-                StringEncoder.EncodeAllStrings(module);
-            });
-        }
+        // Transform the given module itself
+        PerformTransform(args[0], module => {
+            StringEncoder.EncodeAllStrings(module);
+        });
+    }
 
-        static void PerformTransform(string path, Action<ModuleDefinition> transform)
-        {
-            var workDllPath = $"{path}.tmp.dll";
+    static void PerformTransform(string path, Action<ModuleDefinition> transform)
+    {
+        var workDllPath = $"{path}.tmp.dll";
 
-            if (File.Exists(workDllPath))
-                File.Delete(workDllPath);
+        if (File.Exists(workDllPath))
+            File.Delete(workDllPath);
 
-            File.Copy(path, workDllPath);
+        File.Copy(path, workDllPath);
 
-            var module = ModuleDefinition.ReadModule(workDllPath, new() {
-                AssemblyResolver = new NuGetAssemblyResolver()
-            });
+        var module = ModuleDefinition.ReadModule(workDllPath, new() {
+            AssemblyResolver = new NuGetAssemblyResolver()
+        });
 
-            transform(module);
+        transform(module);
 
-            File.Delete(path);
-            module.Write(path);
+        File.Delete(path);
+        module.Write(path);
 
-            Console.WriteLine($"Transformed module {Path.GetFileName(path)}.");
-        }
+        Console.WriteLine($"Transformed module {Path.GetFileName(path)}.");
     }
 }

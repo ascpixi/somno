@@ -1,28 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-namespace Somno.Evasion.Obfuscation
+namespace Somno.Evasion.Obfuscation;
+
+internal static class StringDecoder
 {
-    internal static class StringDecoder
+    /// <summary>
+    /// Decodes a XOR-encoded string. Calls to this method should only
+    /// be made by the IL transformer.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string Decode(string key, string str)
     {
-        /// <summary>
-        /// Decodes a XOR-encoded string. Calls to this method should only
-        /// be made by the IL transformer.
-        /// </summary>
-        /// <param name="key">The XOR key.</param>
-        /// <param name="str">The encoded string.</param>
-        /// <returns>The decoded string.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string Decode(string key, string str)
-        {
-            char[] chArray = new char[str.Length];
-            for (int index = 0; index < str.Length; index++) {
-                chArray[index] = (char)(str[index] ^ (uint)key[index % key.Length]);
-            }
-
-            return new string(chArray);
+        char[] chArray = new char[str.Length];
+        for (int index = 0; index < str.Length; index++) {
+            chArray[index] = (char)(str[index] ^ (uint)key[index % key.Length]);
         }
+
+        return new string(chArray);
     }
 }

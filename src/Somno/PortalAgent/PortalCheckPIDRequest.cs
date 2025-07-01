@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
-namespace Somno.PortalAgent
+namespace Somno.PortalAgent;
+
+[StructLayout(LayoutKind.Explicit, Size = 32)]
+internal unsafe struct PortalCheckPIDRequest
 {
-    [StructLayout(LayoutKind.Explicit, Size = 32)]
-    internal unsafe struct PortalCheckPIDRequest
-    {
-        [FieldOffset(0)] public readonly byte Type;
-        [FieldOffset(1)] public ulong PID;
-        [FieldOffset(1 + sizeof(ulong))] public void* OutputAddress;
+    [FieldOffset(0)] public readonly byte Type;
+    [FieldOffset(1)] public ulong PID;
+    [FieldOffset(1 + sizeof(ulong))] public void* OutputAddress;
 
-        public PortalCheckPIDRequest()
-        {
-            Type = 2;
-        }
+    public PortalCheckPIDRequest()
+    {
+        Type = 2;
     }
 }

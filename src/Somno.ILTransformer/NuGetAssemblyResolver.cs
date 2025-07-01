@@ -1,61 +1,49 @@
 ﻿using Mono.Cecil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
-namespace Somno.ILTransformer
+namespace Somno.ILTransformer;
+
+internal class NuGetAssemblyResolver : BaseAssemblyResolver
 {
-    internal class NuGetAssemblyResolver : BaseAssemblyResolver
+    readonly DefaultAssemblyResolver defaultResolver = new();
+
+    public override AssemblyDefinition Resolve(AssemblyNameReference name)
     {
-        DefaultAssemblyResolver defaultResolver;
+        AssemblyDefinition? assembly;
 
-        public NuGetAssemblyResolver()
-        {
-            defaultResolver = new DefaultAssemblyResolver();
+        try {
+            assembly = defaultResolver.Resolve(name);
+            assembly ??= ResolveByNuGet(name);
+        }
+        catch (AssemblyResolutionException) {
+            assembly = ResolveByNuGet(name);
+        }
+        
+        if (assembly == null) {
+            throw new AssemblyResolutionException(name);
         }
 
-        public override AssemblyDefinition Resolve(AssemblyNameReference name)
-        {
-            AssemblyDefinition? assembly;
+        return assembly;
+    }
 
-            try {
-                assembly = defaultResolver.Resolve(name);
-                assembly ??= ResolveByNuGet(name);
-            }
-            catch (AssemblyResolutionException) {
-                assembly = ResolveByNuGet(name);
-            }
-            
-            if(assembly == null) {
-                throw new AssemblyResolutionException(name);
-            }
+    static AssemblyDefinition? ResolveByNuGet(AssemblyNameReference name)
+    {
+        var libraryPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".nuget/packages",
+            name.Name,
+            name.Version.ToString(),
+            "lib"
+        );
 
-            return assembly;
+        foreach (var frameworkDllFolder in Directory.GetDirectories(libraryPath)) {
+            var frameworkDll = Path.Combine(frameworkDllFolder, $"{name.Name}.dll");
+            var assembly = AssemblyDefinition.ReadAssembly(frameworkDll);
+
+            if (assembly.FullName == name.FullName) {
+                return assembly;
+            }
         }
-    
-        static AssemblyDefinition? ResolveByNuGet(AssemblyNameReference name)
-        {
-            var libraryPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".nuget/packages",
-                name.Name,
-                name.Version.ToString(),
-                "lib"
-            );
 
-            foreach (var frameworkDllFolder in Directory.GetDirectories(libraryPath)) {
-                var frameworkDll = Path.Combine(frameworkDllFolder, $"{name.Name}.dll");
-                var assembly = AssemblyDefinition.ReadAssembly(frameworkDll);
-
-                if (assembly.FullName == name.FullName) {
-                    return assembly;
-                }
-            }
-
-            return null;
-        }
+        return null;
     }
 }

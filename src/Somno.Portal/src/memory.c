@@ -8,7 +8,9 @@
 #pragma warning (disable: 4996) // deprecation warnings
 
 BOOLEAN mem_usermode_addr_valid(uint64_t ptr) {
-	if (ptr == 0) return FALSE;
+	if (ptr == 0)
+		return FALSE;
+
 	if (ptr > 0x7FFF'FFFF'FFFF'FFFF) {
 		// higher half starts; user-mode memory cannot be in this region
 		return FALSE;

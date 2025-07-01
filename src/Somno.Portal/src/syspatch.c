@@ -43,8 +43,7 @@ void* syspatch_get_module_base(const char* searchFor) {
 	}
 
 	PVOID moduleBase = NULL;
-	for (uint32_t i = 0; i < modules->NumberOfModules; i++)
-	{
+	for (uint32_t i = 0; i < modules->NumberOfModules; i++) {
 		RTL_PROCESS_MODULE_INFORMATION* module = &modules->Modules[i];
 		if (strcmp((char*)module->FullPathName, searchFor) == 0) {
 			moduleBase = module->ImageBase;

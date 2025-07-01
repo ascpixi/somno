@@ -77,7 +77,7 @@ namespace Somno.UI.Engine
         {
             Compiler.Compile(VertexShaderSource, "main", "vs", "vs_4_0", out VertexShaderBlob, out _);
             if (VertexShaderBlob == null)
-                throw new Exception("Error compiling vertex shader.");
+                throw new Exception("Cannot compile the vertex shader.");
 
             VertexShader = device.CreateVertexShader(VertexShaderBlob);
 
@@ -100,7 +100,7 @@ namespace Somno.UI.Engine
 
             Compiler.Compile(PixelShaderSource, "main", "ps", "ps_4_0", out PixelShaderBlob, out _);
             if (PixelShaderBlob == null)
-                throw new Exception("Error compiling pixel shader.");
+                throw new Exception("Cannot compile the pixel shader.");
 
             PixelShader = device.CreatePixelShader(PixelShaderBlob);
 
